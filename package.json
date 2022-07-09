@@ -1,0 +1,19 @@
+{
+  "name": "ophidian",
+  "version": "0.0.1",
+  "description": "A Component framework for Obsidian Plugins",
+  "keywords": [
+    "obsidian"
+  ],
+  "repository": "https://github.com/pjeby/ophidian.git",
+  "author": "PJ Eby",
+  "license": "ISC",
+  "module": "index.ts",
+  "dependencies": {
+    "monkey-around": "^2.3",
+    "to-use": "^0.1.0"
+  },
+  "peerDependencies": {
+    "obsidian": "^0.15.4"
+  }
+}

@@ -1,0 +1,19 @@
+lockfileVersion: 5.3
+
+specifiers:
+  monkey-around: ^2.3
+  to-use: ^0.1.0
+
+dependencies:
+  monkey-around: 2.3.0
+  to-use: 0.1.1
+
+packages:
+
+  /monkey-around/2.3.0:
+    resolution: {integrity: sha512-QWcCUWjqE/MCk9cXlSKZ1Qc486LD439xw/Ak8Nt6l2PuL9+yrc9TJakt7OHDuOqPRYY4nTWBAEFKn32PE/SfXA==}
+    dev: false
+
+  /to-use/0.1.1:
+    resolution: {integrity: sha512-DXChsrF22Ao07xCX/vM/nz+73DorxLrL4n01D1xHaN8/15KRgwiN67zBiIrzM2PWRt98eQvudUJ5IWtfE+7qLQ==}
+    dev: false

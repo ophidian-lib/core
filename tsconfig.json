@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "es2018",
+        "module": "ESNext",
+        "experimentalDecorators": true,
+        "newLine": "lf",
+        "moduleResolution": "node",
+        "lib": ["ES2018", "DOM"]
+    }
+}
