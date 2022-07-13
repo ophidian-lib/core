@@ -55,6 +55,11 @@ export default class Builder {
                 ...builtins,
             ],
             format: "cjs",
+            loader: {
+                '.png': 'dataurl',
+                '.gif': 'dataurl',
+                '.svg': 'dataurl',
+            },
             watch: !prod,
             target: "ES2018",
             logLevel: "info",
