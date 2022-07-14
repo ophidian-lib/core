@@ -144,10 +144,10 @@ export class LayoutStorage extends Service {
 
             // Load workspace settings as workspace is loading
             setLayout(old) {
-                return dedupe(STORAGE_EVENTS_V1, old, async function setLayout(this: Workspace, layout: any, ...etc) {
-                    loadSettings(this, layout);
+                return dedupe(STORAGE_EVENTS, old, async function setLayout(this: Workspace, layout: any, ...etc) {
+                    events.trigger(loadEvent+":start");
                     try {
-                        events.trigger(loadEvent+":start");
+                        loadSettings(this, layout);
                         return await old.call(this, layout, ...etc);
                     } finally {
                         events.trigger(loadEvent+":workspace");
@@ -157,7 +157,7 @@ export class LayoutStorage extends Service {
 
             // Load settings after loading each leaf
             deserializeLayout(old) {
-                return dedupe(STORAGE_EVENTS_V1, old,
+                return dedupe(STORAGE_EVENTS, old,
                     async function deserializeLayout(state: any, ...etc){
                         const result = await old.call(this, state, ...etc);
                         loadSettings(result, state);
@@ -171,14 +171,15 @@ export class LayoutStorage extends Service {
 
 export function cloneValue(ob: any) { return (ob && typeof ob === "object") ? JSON.parse(JSON.stringify(ob)) : ob; }
 
-const STORAGE_EVENTS_V1 = Symbol.for("v1.layout-storage-events.ophidian.peak-dev.org");
+const revision = 2;
+const STORAGE_EVENTS = Symbol.for(`v${revision}.layout-storage-events.ophidian.peak-dev.org`);
 const layoutProps = "ophidian:layout-settings";
-const loadEvent = "ophidian-layout-storage:v1:item-load";
-const saveEvent = "ophidian-layout-storage:v1:item-save";
-const setEvent = "ophidian-layout-storage:v1:set:";
+const loadEvent   = `ophidian-layout-storage:v${revision}:item-load`;
+const saveEvent   = `ophidian-layout-storage:v${revision}:item-save`;
+const setEvent    = `ophidian-layout-storage:set:`;
 
 function serializeSettings(old: () => any) {
-    return dedupe(STORAGE_EVENTS_V1, old, function serialize(){
+    return dedupe(STORAGE_EVENTS, old, function serialize(){
         const state = old.call(this);
         app.workspace.trigger(saveEvent, this, state);
         if (this[layoutProps]) state[layoutProps] = cloneValue(this[layoutProps]);
