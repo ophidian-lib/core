@@ -1,6 +1,6 @@
 {
   "name": "ophidian",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Component framework for Obsidian Plugins",
   "keywords": [
     "obsidian"
@@ -8,10 +8,11 @@
   "repository": "https://github.com/pjeby/ophidian.git",
   "author": "PJ Eby",
   "license": "ISC",
-  "module": "index.ts",
+  "type": "module",
+  "module": "src/index.ts",
   "exports": {
-    ".":       "./index.ts",
-    "./build": "./build.mjs"
+    ".":       "./src/index.ts",
+    "./build": "./src/build.mjs"
   },
   "dependencies": {
     "builtin-modules": "^3.3.0",

@@ -18,11 +18,11 @@ This project is still in development and should mostly be considered pre-alpha. 
 
 Basically, if a part of this package isn't documented, it's not yet stable.  (And to start with, none of it is documented.  Internal comments and JSDocs don't count!)
 
-As of this release, there are three sub-modules:
+As of this release, there are three primary sub-modules:
 
 - ` build` for building plugins (see the `ophidian.config.mjs` and `package.json` files in [Pane Relief](https://github.com/pjeby/pane-relief) for a usage example),
 - `services` for dividing plugins into smaller components and asking each other -- a thin Obsidian-specific wrapper over [to-use](https://github.com/pjeby/to-use/), and
-- `layout` which provides services for storing persistent settings on the Obsidian workspace or specific items in it (windows, leaves, splits, etc.), with full support for Obsidian's workspaces plugin.
+- `layout` which provides services for storing persistent settings on the Obsidian workspace or specific items in it (windows, leaves, splits, etc.), with full support for Obsidian's workspaces plugin, and a framework for managing window-specific UI components (for supporting Obsidian 0.15+'s multi-window feature).
 
 You do not need to import items directly from `services` or `layout`, as all of their exports are re-exported by the top-level `ophidian` package.
 
