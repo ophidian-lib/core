@@ -104,6 +104,10 @@ export class LayoutStorage extends Service {
         return (app.workspace as Events).on(loadEvent, callback, ctx);
     }
 
+    onSaveItem(callback: (on: LayoutItem, state: any) => any, ctx?: any): EventRef {
+        return (app.workspace as Events).on(saveEvent, callback, ctx);
+    }
+
     onLoadWorkspace(callback: () => any, ctx?: any): EventRef {
         if (!this.loading && app.workspace.layoutReady) {
             // A workspace is already loaded; trigger event as microtask
@@ -121,7 +125,15 @@ export class LayoutStorage extends Service {
     loading = false;
 
     onload() {
-        const self = this;
+        const events = app.workspace as Events;
+
+        // We have to use the events because another plugin's instance of this service
+        // might be handling the monkeypatches and triggering the events, but *all* instances
+        // of this service need to know whether they're loading -- i.e., the flag can't be
+        // safely set directly within the monkeypatching.
+        //
+        this.registerEvent(events.on(loadEvent+":start",     () => this.loading = true));
+        this.registerEvent(events.on(loadEvent+":workspace", () => this.loading = false));
 
         // Save settings as each item is serialized
         this.register(around(WorkspaceItem.prototype, {serialize: serializeSettings}));
@@ -135,11 +147,10 @@ export class LayoutStorage extends Service {
                 return dedupe(STORAGE_EVENTS_V1, old, async function setLayout(this: Workspace, layout: any, ...etc) {
                     loadSettings(this, layout);
                     try {
-                        self.loading = true;
+                        events.trigger(loadEvent+":start");
                         return await old.call(this, layout, ...etc);
                     } finally {
-                        self.loading = false;
-                        this.trigger(loadEvent+":workspace");
+                        events.trigger(loadEvent+":workspace");
                     }
                 });
             },
@@ -163,13 +174,15 @@ export function cloneValue(ob: any) { return (ob && typeof ob === "object") ? JS
 const STORAGE_EVENTS_V1 = Symbol.for("v1.layout-storage-events.ophidian.peak-dev.org");
 const layoutProps = "ophidian:layout-settings";
 const loadEvent = "ophidian-layout-storage:v1:item-load";
+const saveEvent = "ophidian-layout-storage:v1:item-save";
 const setEvent = "ophidian-layout-storage:v1:set:";
 
 function serializeSettings(old: () => any) {
     return dedupe(STORAGE_EVENTS_V1, old, function serialize(){
-        const result = old.call(this);
-        if (this[layoutProps]) result[layoutProps] = cloneValue(this[layoutProps]);
-        return result;
+        const state = old.call(this);
+        app.workspace.trigger(saveEvent, this, state);
+        if (this[layoutProps]) state[layoutProps] = cloneValue(this[layoutProps]);
+        return state;
     });
 }
 
