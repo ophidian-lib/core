@@ -1,5 +1,6 @@
 import { Component, Plugin } from "obsidian";
 import { use } from "to-use";
+import { defer } from "./defer";
 export * from "to-use";
 
 use.def(Plugin, () => { throw new Error("Plugin not created yet"); });
@@ -44,7 +45,7 @@ class Bootloader extends Component { // not a service, so it doesn't end up depe
             this.children.add(service);
             if (this.loaded) {
                 // De-zalgofy addChild() so component doesn't load() during service lookup/registration
-                Promise.resolve().then(() => super.addChild(service));
+                defer(() => super.addChild(service));
             } else {
                 super.addChild(service);
             }

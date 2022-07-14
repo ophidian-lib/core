@@ -1,5 +1,6 @@
 import { around, dedupe } from "monkey-around";
 import { EventRef, Events, Workspace, WorkspaceItem } from "obsidian";
+import { defer } from "../defer";
 import { Useful, Service } from "../services";
 
 /** Plugins add entries to this interface to define their setting types */
@@ -106,7 +107,7 @@ export class LayoutStorage extends Service {
     onLoadWorkspace(callback: () => any, ctx?: any): EventRef {
         if (!this.loading && app.workspace.layoutReady) {
             // A workspace is already loaded; trigger event as microtask
-            Promise.resolve().then(() => {
+            defer(() => {
                 try { callback.call(ctx); } catch (e) { console.error(e); }
             });
         }
