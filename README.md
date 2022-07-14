@@ -6,7 +6,7 @@ This framework exists to 1) solve that problem (mostly via [to-use](https://gith
 
 It is designed in modular fashion, so that modern tree-shaking bundlers (like rollup and esbuild) will only include the components needed for your plugin, not the entire thing.
 
-In addition, Ophidian will also include some tools for building Obsidian plugins, to minimize the amount of duplicated configuration required between plugins when using esbuild or rollup directly.
+In addition, Ophidian also includes some tools for building Obsidian plugins, to minimize the amount of duplicated configuration required between plugins when using esbuild or rollup directly.
 
 Note: this library is written and distributed in TypeScript form and can't be `require()`d as a normal node module, because the code in it mostly can't work outside of Obsidian's runtime environment anyway!  So when building a plugin with it, you need to ensure that your bundler will process Typescript from within your `node_modules`.
 

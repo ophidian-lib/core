@@ -3,22 +3,26 @@ import { LayoutItem } from "./settings";
 
 type layoutVisitor = (item: LayoutItem) => boolean | void;
 
+// TODO: Hover editors are not covered by this algorithm, but they also can't have (persistent) storage.
+// OTOH, hover editors' leaves can have transient settings, and can be saved if docked, so probably
+//  should be included.
+
 /**
  * Walk the entire workspace tree, including the workspace itself, along with all roots, windows,
  * leaves, and splits. (Equivalent to walkLayout(app.workspace, visitor).)  Returns true if the
  * visitor function returned true at any point in the traversal, false otherwise.
  *
- * @param visitor Callback taking a Workspace or WorkspaceItem, can return true to stop the traveral
+ * @param visitor Callback taking a Workspace or WorkspaceItem, can return true to stop the traversal
  */
 export function walkLayout(visitor: layoutVisitor): boolean;
 
 /**
- * Walk a portion of the workspace tree, including leafs, splits, roots, windows, etc. if contained
+ * Walk a portion of the workspace tree, including leaves, splits, roots, windows, etc. if contained
  * under the starting point.  Returns true if the visitor function returned true at any point in the
  * traversal, false otherwise.
  *
  * @param item The workspace or workspace item to begin traversal from
- * @param visitor Callback taking a Workspace or WorkspaceItem, can return true to stop the traveral
+ * @param visitor Callback taking a Workspace or WorkspaceItem, can return true to stop the traversal
  */
 export function walkLayout(item: LayoutItem, visitor: layoutVisitor): boolean;
 
@@ -44,6 +48,6 @@ declare module "obsidian" {
         children: WorkspaceItem[]
     }
     interface Workspace {
-        floatingSplit?: WorkspaceParent
+        floatingSplit?: WorkspaceParent & { children: WorkspaceWindow[] }
     }
 }
