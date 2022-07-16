@@ -1,16 +1,31 @@
-## Ophidian: A Component Framework for Obsidian Plugins
+## Ophidian = Component Framework + Build System for Obsidian Plugins
 
 Some [Obsidian](https://obsidian.md) plugins are too big to just slap everything in one class.  But as you break things into smaller parts, you end up doing a lot of hard-to-change and fragile `this.that.theOther.thing`, that also makes the parts less reusable.
 
-This framework exists to 1) solve that problem (mostly via [to-use](https://github.com/pjeby/to-use/)), and 2) provide some commonly-useful services and components for building sophisticated Obsidian plugins.
+In addition, if you develop lots of plugins, you'll find yourself duplicating a bunch of build management and release publishing tools and configuration.
 
-It is designed in modular fashion, so that modern tree-shaking bundlers (like rollup and esbuild) will only include the components needed for your plugin, not the entire thing.
+So, Ophidian exists to:
 
-In addition, Ophidian also includes some tools for building Obsidian plugins, to minimize the amount of duplicated configuration required between plugins when using esbuild or rollup directly.
+1. Solve the component access problem (mostly via [to-use](https://github.com/pjeby/to-use/)),
+2. Provide some commonly-useful services and components for building sophisticated Obsidian plugins, and
+3. Provide a complete build system for Obsidian plugins, including a Github action for publishing them, without needing to duplicate large amounts of code and configuration between plugins.
 
-Note: this library is written and distributed in TypeScript form and can't be `require()`d as a normal node module, because the code in it mostly can't work outside of Obsidian's runtime environment anyway!  So when building a plugin with it, you need to ensure that your bundler will process Typescript from within your `node_modules`.
+The framework for items 1 and 2  is designed in modular fashion, so that modern tree-shaking bundlers (like the one Ophidian's build system uses) will only include the components needed for your plugin, not the entire thing.
 
-(If you're using esbuild or ophidian itself as your plugin builder, you probably won't need any special steps for this to work, but the rollup Typescript plugin requires extra configuration to get it to work properly, as does your tsconfig.json.)
+(Note: if you're not using Ophidian to build your plugins, note that you will need to ensure your bundler will read Typescript from within your `node_modules`, because the component framework is distributed in source form.)
+
+### The Core Framework
+
+As of this release, the core framework features include:
+
+- A service access system for dividing plugins into smaller components that can access each other without relying on `this.that.etc` chains or hardwiring the components to a specific plugin class.  (Implemented as a thin Obsidian-specific wrapper over [to-use](https://github.com/pjeby/to-use/).)
+- "Layout Settings" services for storing persistent settings on the Obsidian workspace or specific items in it (windows, leaves, splits, etc.), with full support for Obsidian's workspaces plugin.  (See Pane Relief's "Focus Lock" feature for a simple usage example.)
+- Services for managing window-specific UI components (for supporting Obsidian 0.15+'s multi-window feature), now used in Pane Relief and Quick Explorer for extending their UIs to multiple windows.
+- Miscellaneous functions for deferring execution, walking the Obsidian workspace component tree, creating delegated event listeners, etc.
+
+### The Build System
+
+See the `ophidian.config.mjs` and `package.json` files in [Pane Relief](https://github.com/pjeby/pane-relief) for a usage example.  For the use of the Github action to publish plugins, see [this example from Quick Explorer](https://github.com/pjeby/quick-explorer/blob/master/.github/workflows/publish.yml).  (You should probably not use `@master`, though, and instead depend on a specific version tag; see project status info below.)
 
 ### Status
 
@@ -18,13 +33,5 @@ This project is still in development and should mostly be considered pre-alpha. 
 
 Basically, if a part of this package isn't documented, it's not yet stable.  (And to start with, none of it is documented.  Internal comments and JSDocs don't count!)
 
-As of this release, there are three primary sub-modules:
-
-- ` build` for building plugins (see the `ophidian.config.mjs` and `package.json` files in [Pane Relief](https://github.com/pjeby/pane-relief) for a usage example),
-- `services` for dividing plugins into smaller components and asking each other -- a thin Obsidian-specific wrapper over [to-use](https://github.com/pjeby/to-use/), and
-- `layout` which provides services for storing persistent settings on the Obsidian workspace or specific items in it (windows, leaves, splits, etc.), with full support for Obsidian's workspaces plugin, and a framework for managing window-specific UI components (for supporting Obsidian 0.15+'s multi-window feature).
-
-You do not need to import items directly from `services` or `layout`, as all of their exports are re-exported by the top-level `ophidian` package.
-
-All of these submodules are stable enough that I've started using them in my own plugins, but the layout package is the one currently most likely to grow new functionality, have bugs, or get its API reworked.
+Everything in this package is stable enough that they'r being used in my own plugins, but many subsystems are likely to grow new features or experience refactoring, especially in the area of layout.
 
