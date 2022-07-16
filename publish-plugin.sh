@@ -6,6 +6,11 @@ TAG_NAME=${GITHUB_REF##*/}
 MANIFEST_VERSION=$(jq -r .version manifest.json)
 MANIFEST_FILE=manifest.json
 
+BUILD_DIR=dist
+if [[ -d build && ! -d dist ]]; then
+    BUILD_DIR=build
+fi
+
 # Check if beta manifest is newer: if so, use that for the release
 # (so betas can be made public later and have the right version number)
 #
@@ -26,14 +31,12 @@ fi
 pnpm install
 pnpm build
 
-rm -f dist/main.css
-
 mkdir "${PLUGIN_NAME}"
 
 assets=()
 for f in main.js manifest.json styles.css; do
-    if [[ "$f" != manifest.json && -f "dist/$f" && ! -f "$f" ]]; then
-        mv dist/$f $f;
+    if [[ "$f" != manifest.json && -f "$BUILD_DIR/$f" && ! -f "$f" ]]; then
+        mv "$BUILD_DIR"/$f $f;
     fi
     if [[ -f $f ]]; then
         cp $f "${PLUGIN_NAME}/"
