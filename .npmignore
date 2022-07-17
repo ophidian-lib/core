@@ -1,4 +1,5 @@
 node_modules
+docs
 pnpm-lock.yaml
 action.yml
 publish-plugin.sh

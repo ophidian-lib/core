@@ -8,7 +8,7 @@ So, Ophidian exists to:
 
 1. Solve the component access problem (mostly via [to-use](https://github.com/pjeby/to-use/)),
 2. Provide some commonly-useful services and components for building sophisticated Obsidian plugins, and
-3. Provide a complete build system for Obsidian plugins, including a Github action for publishing them, without needing to duplicate large amounts of code and configuration between plugins.
+3. Provide a complete build system for Obsidian plugins, including [a Github action for publishing them](docs/Publish-Action.md), without needing to duplicate large amounts of code and configuration between plugins.
 
 The framework for items 1 and 2  is designed in modular fashion, so that modern tree-shaking bundlers (like the one Ophidian's build system uses) will only include the components needed for your plugin, not the entire thing.
 
@@ -25,7 +25,7 @@ As of this release, the core framework features include:
 
 ### The Build System
 
-See the `ophidian.config.mjs` and `package.json` files in [Pane Relief](https://github.com/pjeby/pane-relief) for a usage example.  For the use of the Github action to publish plugins, see [this example from Quick Explorer](https://github.com/pjeby/quick-explorer/blob/master/.github/workflows/publish.yml).  (You should probably not use `@master`, though, and instead depend on a specific version tag; see project status info below.)
+See the `ophidian.config.mjs` and `package.json` files in [Pane Relief](https://github.com/pjeby/pane-relief) for a usage example.  For the use of the Github action to publish plugins, see [the documentation](docs/Publish-Action.md) for an example and details.
 
 ### Status
 

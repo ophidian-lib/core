@@ -28,8 +28,8 @@ if [[ "$MANIFEST_VERSION" != "$TAG_NAME" ]]; then
     exit 1
 fi
 
-pnpm install
-pnpm build
+"$PACKAGER" install
+"$PACKAGER" build
 
 mkdir "${PLUGIN_NAME}"
 
