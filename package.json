@@ -1,6 +1,6 @@
 {
   "name": "ophidian",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A Component framework for Obsidian Plugins",
   "keywords": [
     "obsidian"
