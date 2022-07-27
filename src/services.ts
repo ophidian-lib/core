@@ -53,3 +53,9 @@ class Bootloader extends Component { // not a service, so it doesn't end up depe
         return service
     }
 }
+
+export function onLoad(component: Component, callback: () => any) {
+    const child = new Component();
+    child.onload = () => { component.removeChild(child); callback(); }
+    component.addChild(child);
+}

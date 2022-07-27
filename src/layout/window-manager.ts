@@ -1,6 +1,12 @@
 import { Component, View, WorkspaceLeaf, WorkspaceParent } from "obsidian";
-import { Context, Service, use } from "../services";
+import { Context, Service, use, onLoad } from "../services";
 import { defer } from "../defer";
+
+type PWCFactory<T extends PerWindowComponent> = {
+    new (use: Context, win: Window): T
+    onload(m: WindowManager<T>): void;
+    onunload(m: WindowManager<T>): void;
+}
 
 /**
  * Component that belongs to a plugin + window. e.g.:
@@ -37,8 +43,11 @@ export class PerWindowComponent extends Component {
     }
 
     [use.factory]() {
-        return new WindowManager(this.constructor as new (use: Context, win: Window) => typeof this)
+        return new WindowManager(this.constructor as PWCFactory<typeof this>);
     }
+
+    static onload(wm: WindowManager<typeof this.prototype>) {}
+    static onunload(wm: WindowManager<typeof this.prototype>) {}
 }
 
 /**
@@ -49,16 +58,20 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     instances = new WeakMap<Window, T>();
 
     constructor (
-        public factory: new (use: Context, win: Window) => T,  // The class of thing to manage
+        public factory: PWCFactory<T>,  // The class of thing to manage
     ) {
         super();
     }
 
     watching: boolean = false
 
+    // Allow PWC's to provide a static initializer -- handy for setting up event dispatching
+    onload() { this.factory.onload?.(this); }
+    onunload() { this.factory.onunload?.(this); }
+
     watch(): this {
         // Defer watch until plugin is loaded
-        if (!this._loaded) this.onload = () => this.watch();
+        if (!this._loaded) onLoad(this, () => this.watch());
         else if (!this.watching) {
             const {workspace} = app;
             this.watching = true;
