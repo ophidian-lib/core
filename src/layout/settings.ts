@@ -1,5 +1,6 @@
 import { around, dedupe } from "monkey-around";
 import { EventRef, Events, Workspace, WorkspaceItem } from "obsidian";
+import { walkLayout } from "./walk";
 import { defer } from "../defer";
 import { Useful, Service } from "../services";
 
@@ -101,6 +102,14 @@ export class LayoutStorage extends Service {
     }
 
     onLoadItem(callback: (on: LayoutItem, state: any) => any, ctx?: any): EventRef {
+        if (!this.loading && app.workspace.layoutReady) {
+            // A workspace is already loaded; trigger events as microtask
+            defer(() => {
+                walkLayout(item => {
+                    try { callback.call(ctx); } catch (e) { console.error(e); }
+                })
+            });
+        }
         return (app.workspace as Events).on(loadEvent, callback, ctx);
     }
 
