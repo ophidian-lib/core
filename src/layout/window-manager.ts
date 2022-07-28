@@ -1,9 +1,10 @@
-import { Component, View, WorkspaceLeaf, WorkspaceParent } from "obsidian";
+import { Component, View, Workspace, WorkspaceContainer, WorkspaceLeaf } from "obsidian";
 import { Context, Service, use, onLoad } from "../services";
 import { defer } from "../defer";
+import { around } from "monkey-around";
 
 type PWCFactory<T extends PerWindowComponent> = {
-    new (use: Context, win: Window): T
+    new (use: Context, container: WorkspaceContainer): T
     onload(m: WindowManager<T>): void;
     onunload(m: WindowManager<T>): void;
 }
@@ -34,11 +35,9 @@ type PWCFactory<T extends PerWindowComponent> = {
  */
 export class PerWindowComponent extends Component {
 
-    get container(): WorkspaceParent {
-        return containerForWindow(this.win);
-    }
+    win = this.container.win;
 
-    constructor(public use: Context, public win: Window) {
+    constructor(public use: Context, public container: WorkspaceContainer) {
         super();
     }
 
@@ -46,6 +45,7 @@ export class PerWindowComponent extends Component {
         return new WindowManager(this.constructor as PWCFactory<typeof this>);
     }
 
+    // Allow PWC's to provide a static initializer -- handy for setting up event dispatching
     static onload(wm: WindowManager<typeof this.prototype>) {}
     static onunload(wm: WindowManager<typeof this.prototype>) {}
 }
@@ -64,9 +64,39 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     }
 
     watching: boolean = false
+    layoutReadyCallbacks = [];
 
-    // Allow PWC's to provide a static initializer -- handy for setting up event dispatching
-    onload() { this.factory.onload?.(this); }
+    onload() {
+        const self = this;
+        this.registerEvent(app.workspace.on("layout-change", () => {
+            if (app.workspace.layoutReady && this.layoutReadyCallbacks.length) {
+                this.layoutReadyCallbacks.forEach(defer);
+                this.layoutReadyCallbacks = [];
+            }
+        }));
+        this.register(around(Workspace.prototype, {
+            clearLayout(old) {
+                return function clearLayout() {
+                    self.instances.get(window)?.unload();
+                    self.instances.delete(window);
+                    return old.call(this);
+                }
+            }
+        }));
+        this.factory.onload?.(this);
+    }
+
+    onLeafChange(cb: (leaf: WorkspaceLeaf) => any, ctx?: any) {
+        this.onLayoutReady(() => cb.call(ctx, app.workspace.activeLeaf));
+        return app.workspace.on("active-leaf-change", leaf => {
+            if (app.workspace.layoutReady) cb.call(ctx, leaf);
+        });
+    }
+
+    onLayoutReady(cb: () => any) {
+        if (app.workspace.layoutReady) defer(cb); else this.layoutReadyCallbacks.push(cb);
+    }
+
     onunload() { this.factory.onunload?.(this); }
 
     watch(): this {
@@ -77,10 +107,10 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
             this.watching = true;
             this.registerEvent(
                 workspace.on("window-open", (_, win) => {
-                    workspace.onLayoutReady(() => defer(() => this.forWindow(win)));
+                    this.onLayoutReady(() => this.forWindow(win));
                 })
             );
-            workspace.onLayoutReady(() => defer(() => this.forAll()));
+            this.onLayoutReady(() => this.forAll());
         }
         return this;
     }
@@ -93,7 +123,20 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     forWindow(win: Window = window.activeWindow ?? window, create = true): T | undefined {
         let inst = this.instances.get(win);
         if (!inst && create) {
-            inst = new this.factory(this.use, win);
+            const container = containerForWindow(win)
+            if (container) return this.forContainer(container);
+        }
+        return inst || undefined;
+    }
+
+    forContainer(container: WorkspaceContainer): T;
+    forContainer(container: WorkspaceContainer, create: true): T;
+    forContainer(container: WorkspaceContainer, create: boolean): T | undefined;
+    forContainer(container: WorkspaceContainer, create = true) {
+        const {win} = container;
+        let inst = this.instances.get(win);
+        if (!inst && create) {
+            inst = new this.factory(this.use, container);
             if (inst) {
                 this.instances.set(win, inst!);
                 inst.registerDomEvent(win, "beforeunload", () => {
@@ -103,7 +146,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
                 this.addChild(inst);
             }
         }
-        return inst || undefined;
+        return inst;
     }
 
     forDom(el: HTMLElement): T;
@@ -114,12 +157,8 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         return this.forWindow(windowForDom(el), create);
     }
 
-    forLeaf(leaf: WorkspaceLeaf): T;
-    forLeaf(leaf: WorkspaceLeaf, create: true): T;
-    forLeaf(leaf: WorkspaceLeaf, create: boolean): T | undefined;
-
-    forLeaf(leaf: WorkspaceLeaf, create = true) {
-        return this.forDom(leaf.containerEl, create);
+    forLeaf(leaf: WorkspaceLeaf = app.workspace.activeLeaf, create = true): T | undefined {
+        if (app.workspace.isLeafAttached(leaf)) return this.forContainer(leaf.getContainer(), create);
     }
 
     forView(view: View): T;
@@ -131,16 +170,16 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     }
 
     forAll(create = true) {
-        return allWindows().map(win => this.forWindow(win, create)).filter(t => t);
+        return allContainers().map(c => this.forContainer(c, create)).filter(t => t);
     }
 }
 
+export function allContainers() {
+    return [app.workspace.rootSplit].concat(app.workspace.floatingSplit.children);
+}
+
 export function allWindows() {
-    const windows: Window[] = [window], {floatingSplit} = app.workspace;
-    if (floatingSplit) {
-        for(const split of floatingSplit.children) if (split.win) windows.push(split.win);
-    }
-    return windows;
+    return allContainers().map(c => c.win);
 }
 
 export function numWindows() {
@@ -158,7 +197,7 @@ export function windowForDom(el: Node) {
     return el.win || (el.ownerDocument || <Document>el).defaultView || window;
 }
 
-export function containerForWindow(win: Window): WorkspaceParent {
+export function containerForWindow(win: Window): WorkspaceContainer {
     if (win === window) return app.workspace.rootSplit;
     const {floatingSplit} = app.workspace;
     if (floatingSplit) {
@@ -169,6 +208,8 @@ export function containerForWindow(win: Window): WorkspaceParent {
 declare module "obsidian" {
     interface Workspace {
         floatingSplit?: WorkspaceParent & { children: WorkspaceWindow[] };
+        clearLayout(): Promise<void>
+        isLeafAttached(leaf: WorkspaceLeaf): boolean
     }
     interface WorkspaceWindow extends WorkspaceParent {
         win: Window
