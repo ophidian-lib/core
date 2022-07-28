@@ -1,4 +1,4 @@
-import { Component, View, Workspace, WorkspaceContainer, WorkspaceLeaf } from "obsidian";
+import { Component, View, WorkspaceContainer, WorkspaceLeaf } from "obsidian";
 import { Context, Service, use, onLoad } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";
@@ -19,7 +19,7 @@ type PWCFactory<T extends PerWindowComponent> = {
  *     }
  *
  *     class MyPlugin extends Plugin {
- *         titleWidget = this.use(TitleWidget);
+ *         titleWidget = this.use(TitleWidget).watch();
  *         ...
  *     }
  *
@@ -29,9 +29,9 @@ type PWCFactory<T extends PerWindowComponent> = {
  * all of them.  (e.g. `this.titleWidget.forWindow(...)`)  See WindowManager for the
  * full API.
  *
- * If you want your components to be created all at once for any existing windows
- * and automatically for any windows opened in the future, you can call `watch()`
- * on the resulting item, e.g. `titleWidget = this.use(TitleWidget).watch()`.
+ * If you want your components to be created lazily only on-demand instead of eagerly
+ * and automatically, you can leave off the `.watch()` call, e.g.
+ * `titleWidget = this.use(TitleWidget)` instead.
  */
 export class PerWindowComponent extends Component {
 
@@ -55,7 +55,7 @@ export class PerWindowComponent extends Component {
  */
 export class WindowManager<T extends PerWindowComponent> extends Service {
 
-    instances = new WeakMap<Window, T>();
+    instances = new Map<WorkspaceContainer, T>();
 
     constructor (
         public factory: PWCFactory<T>,  // The class of thing to manage
@@ -67,25 +67,16 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     layoutReadyCallbacks = [];
 
     onload() {
-        const self = this;
         this.registerEvent(app.workspace.on("layout-change", () => {
             if (app.workspace.layoutReady && this.layoutReadyCallbacks.length) {
                 this.layoutReadyCallbacks.forEach(defer);
                 this.layoutReadyCallbacks = [];
             }
         }));
-        this.register(around(Workspace.prototype, {
-            clearLayout(old) {
-                return function clearLayout() {
-                    self.instances.get(window)?.unload();
-                    self.instances.delete(window);
-                    return old.call(this);
-                }
-            }
-        }));
         this.factory.onload?.(this);
     }
 
+    // Only get safe active-leaf-change events, plus get an initial one on workspace load
     onLeafChange(cb: (leaf: WorkspaceLeaf) => any, ctx?: any) {
         this.onLayoutReady(() => cb.call(ctx, app.workspace.activeLeaf));
         return app.workspace.on("active-leaf-change", leaf => {
@@ -93,6 +84,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         });
     }
 
+    // A version of workspce.onLayoutReady that will defer callbacks if the workspace is being replaced
     onLayoutReady(cb: () => any) {
         if (app.workspace.layoutReady) defer(cb); else this.layoutReadyCallbacks.push(cb);
     }
@@ -103,57 +95,56 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         // Defer watch until plugin is loaded
         if (!this._loaded) onLoad(this, () => this.watch());
         else if (!this.watching) {
-            const {workspace} = app;
+            const {workspace} = app, self = this;
             this.watching = true;
             this.registerEvent(
-                workspace.on("window-open", (_, win) => {
-                    this.onLayoutReady(() => this.forWindow(win));
+                workspace.on("window-open", container => {
+                    this.onLayoutReady(() => this.forContainer(container));
                 })
             );
+            this.register(around(workspace, {
+                clearLayout(old) {
+                    return async function clearLayout() {
+                        try {
+                            return await old.call(this);
+                        } finally {
+                            // Check for new containers (mainly the rootSplit) after a workspace change
+                            self.onLayoutReady(() => self.forAll());
+                        }
+                    }
+                }
+            }));
             this.onLayoutReady(() => this.forAll());
         }
         return this;
     }
 
-    forWindow(): T;
-    forWindow(win: Window): T;
-    forWindow(win: Window, create: true): T;
-    forWindow(win: Window, create: boolean): T | undefined;
-
     forWindow(win: Window = window.activeWindow ?? window, create = true): T | undefined {
-        let inst = this.instances.get(win);
-        if (!inst && create) {
-            const container = containerForWindow(win)
-            if (container) return this.forContainer(container);
-        }
-        return inst || undefined;
+        const container = containerForWindow(win);
+        if (container) return this.forContainer(container, create);
     }
 
-    forContainer(container: WorkspaceContainer): T;
-    forContainer(container: WorkspaceContainer, create: true): T;
-    forContainer(container: WorkspaceContainer, create: boolean): T | undefined;
-    forContainer(container: WorkspaceContainer, create = true) {
-        const {win} = container;
-        let inst = this.instances.get(win);
+    forContainer(container: WorkspaceContainer, create = true): T | undefined {
+        container = container.getContainer(); // always get root-most container
+        let inst = this.instances.get(container);
         if (!inst && create) {
             inst = new this.factory(this.use, container);
             if (inst) {
-                this.instances.set(win, inst!);
-                inst.registerDomEvent(win, "beforeunload", () => {
-                    this.removeChild(inst!);
-                    this.instances.delete(win);
+                this.instances.set(container, inst);
+                this.addChild(inst);  // unload when plugin does
+                container.component.addChild(inst);  // or if the window closes/workspace changes
+                inst.register(() => {
+                    // Don't keep it around after unload
+                    safeRemoveChild(this, inst);
+                    safeRemoveChild(container.component, inst);
+                    this.instances.delete(container);
                 });
-                this.addChild(inst);
             }
         }
         return inst;
     }
 
-    forDom(el: HTMLElement): T;
-    forDom(el: HTMLElement, create: true): T;
-    forDom(el: HTMLElement, create: boolean): T | undefined;
-
-    forDom(el: HTMLElement, create = true) {
+    forDom(el: HTMLElement, create = true): T | undefined {
         return this.forWindow(windowForDom(el), create);
     }
 
@@ -161,17 +152,17 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         if (app.workspace.isLeafAttached(leaf)) return this.forContainer(leaf.getContainer(), create);
     }
 
-    forView(view: View): T;
-    forView(view: View, create: true): T;
-    forView(view: View, create: boolean): T | undefined;
-
-    forView(view: View, create = true) {
+    forView(view: View, create = true): T | undefined {
         return this.forLeaf(view.leaf, create);
     }
 
     forAll(create = true) {
         return allContainers().map(c => this.forContainer(c, create)).filter(t => t);
     }
+}
+
+export function safeRemoveChild(parent: Component, child: Component) {
+    if (parent._loaded) parent.removeChild(child);
 }
 
 export function allContainers() {
@@ -210,6 +201,9 @@ declare module "obsidian" {
         floatingSplit?: WorkspaceParent & { children: WorkspaceWindow[] };
         clearLayout(): Promise<void>
         isLeafAttached(leaf: WorkspaceLeaf): boolean
+    }
+    interface WorkspaceItem {
+        component: Component
     }
     interface WorkspaceWindow extends WorkspaceParent {
         win: Window
