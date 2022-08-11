@@ -3,6 +3,7 @@ import { EventRef, Events, Workspace, WorkspaceItem } from "obsidian";
 import { walkLayout } from "./walk";
 import { defer } from "../defer";
 import { Useful, Service } from "../services";
+import { cloneValue } from "../clone-value";
 
 /** Plugins add entries to this interface to define their setting types */
 export interface LayoutSettings { }
@@ -177,8 +178,6 @@ export class LayoutStorage extends Service {
         }));
     }
 }
-
-export function cloneValue(ob: any) { return (ob && typeof ob === "object") ? JSON.parse(JSON.stringify(ob)) : ob; }
 
 const revision = 2;
 const STORAGE_EVENTS = Symbol.for(`v${revision}.layout-storage-events.ophidian.peak-dev.org`);
