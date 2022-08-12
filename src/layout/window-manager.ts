@@ -2,6 +2,7 @@ import { Component, View, WorkspaceContainer, WorkspaceLeaf } from "obsidian";
 import { Context, Service, use, onLoad } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";
+import { isLeafAttached } from "./walk";
 
 type PWCFactory<T extends PerWindowComponent> = {
     new (use: Context, container: WorkspaceContainer): T
@@ -149,7 +150,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     }
 
     forLeaf(leaf: WorkspaceLeaf = app.workspace.activeLeaf, create = true): T | undefined {
-        if (app.workspace.isLeafAttached(leaf)) return this.forContainer(leaf.getContainer(), create);
+        if (isLeafAttached(leaf)) return this.forContainer(leaf.getContainer(), create);
     }
 
     forView(view: View, create = true): T | undefined {
@@ -200,7 +201,6 @@ declare module "obsidian" {
     interface Workspace {
         floatingSplit?: WorkspaceParent & { children: WorkspaceWindow[] };
         clearLayout(): Promise<void>
-        isLeafAttached(leaf: WorkspaceLeaf): boolean
     }
     interface WorkspaceItem {
         component: Component

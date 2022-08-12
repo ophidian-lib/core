@@ -1,5 +1,18 @@
-import { Workspace, WorkspaceParent } from "obsidian";
+import { Workspace, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { LayoutItem } from "./settings";
+
+export function isLeafAttached(leaf: WorkspaceLeaf) {
+    const ws = app.workspace, root = leaf?.getRoot();
+    switch (root) {
+        case ws.rootSplit:
+        case ws.floatingSplit:
+        case ws.leftSplit:
+        case ws.rightSplit:
+            return true;
+        default:
+            return false;
+    }
+}
 
 type layoutVisitor = (item: LayoutItem) => boolean | void;
 
