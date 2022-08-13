@@ -54,8 +54,13 @@ class Bootloader extends Component { // not a service, so it doesn't end up depe
     }
 }
 
+// This function can be dropped when 0.16 becomes required/standard: it unloads by popping and won't skip unloads
+export function safeRemoveChild(parent: Component, child: Component) {
+    if (parent._loaded) parent.removeChild(child);
+}
+
 export function onLoad(component: Component, callback: () => any) {
     const child = new Component();
-    child.onload = () => { component.removeChild(child); callback(); }
+    child.onload = () => { safeRemoveChild(component, child); callback(); }
     component.addChild(child);
 }

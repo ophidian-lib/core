@@ -1,5 +1,5 @@
 import { Component, View, WorkspaceContainer, WorkspaceLeaf } from "obsidian";
-import { Context, Service, use, onLoad } from "../services";
+import { Context, Service, use, onLoad, safeRemoveChild } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";
 import { isLeafAttached } from "./walk";
@@ -162,11 +162,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     }
 }
 
-export function safeRemoveChild(parent: Component, child: Component) {
-    if (parent._loaded) parent.removeChild(child);
-}
-
-export function allContainers() {
+export function allContainers(): WorkspaceContainer[] {
     return [app.workspace.rootSplit].concat(app.workspace.floatingSplit.children);
 }
 
@@ -195,6 +191,10 @@ export function containerForWindow(win: Window): WorkspaceContainer {
     if (floatingSplit) {
         for(const split of floatingSplit.children) if (win === split.win) return split;
     }
+}
+
+export function focusedContainer(): WorkspaceContainer | undefined {
+    return allContainers().filter(c => c.win.document.hasFocus()).pop();
 }
 
 declare module "obsidian" {
