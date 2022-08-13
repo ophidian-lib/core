@@ -5,12 +5,9 @@ import { defer } from "../defer";
 import { Useful, Service } from "../services";
 import { cloneValue } from "../clone-value";
 
-/** Plugins add entries to this interface to define their setting types */
-export interface LayoutSettings { }
-
 /** An object with layout-stored settings (Workspace, WorkspaceItem, etc.) */
 interface HasLayoutSettings {
-    [layoutProps]?: LayoutSettings
+    [layoutProps]?: any
 }
 
 declare module "obsidian" {
@@ -21,11 +18,11 @@ declare module "obsidian" {
 /** Things that can have layout-stored settings  */
 export type LayoutItem = WorkspaceItem | Workspace;
 
-export class LayoutSetting<K extends keyof LayoutSettings, T extends LayoutItem> {
+export class LayoutSetting<V extends any, T extends LayoutItem> {
 
     store: LayoutStorage;
 
-    constructor(ctx: Useful, public key: K, public defaultValue?: LayoutSettings[K], public owner?: T) {
+    constructor(ctx: Useful, public key: string, public defaultValue?: V, public owner?: T) {
         this.store = ctx.use(LayoutStorage);
     }
 
@@ -33,11 +30,11 @@ export class LayoutSetting<K extends keyof LayoutSettings, T extends LayoutItem>
         return new LayoutSetting(this.store, this.key, this.defaultValue, on);
     }
 
-    get(from: LayoutItem = this.owner): LayoutSettings[K] {
+    get(from: LayoutItem = this.owner): V {
         return this.store.get(this.requires(from), this.key, this.defaultValue);
     }
 
-    set(value: LayoutSettings[K], on: LayoutItem = this.owner) {
+    set(value: V, on: LayoutItem = this.owner) {
         this.store.set(this.requires(on), this.key, value);
     }
 
@@ -51,7 +48,7 @@ export class LayoutSetting<K extends keyof LayoutSettings, T extends LayoutItem>
     }
 
     onSet(callback: (
-        on: LayoutItem, value?: LayoutSettings[K], old?: LayoutSettings[K]) => any, ctx?: any
+        on: LayoutItem, value?: V, old?: V) => any, ctx?: any
     ): EventRef {
         if (this.owner) return this.store.onSet(this.key, (on, val, old) => {
             if (on === this.owner) callback.call(ctx, val, old);
@@ -71,12 +68,12 @@ export class LayoutSetting<K extends keyof LayoutSettings, T extends LayoutItem>
 
 export class LayoutStorage extends Service {
 
-    get<K extends keyof LayoutSettings>(from: LayoutItem, key: K, defaultValue?: LayoutSettings[K]): LayoutSettings[K] {
+    get<V extends any>(from: LayoutItem, key: string, defaultValue?: V): V {
         return from?.[layoutProps]?.[key] ?? defaultValue;
     }
 
-    set<K extends keyof LayoutSettings>(on: LayoutItem, key: K, value?: LayoutSettings[K]) {
-        const props = on[layoutProps] || (on[layoutProps] = {} as LayoutSettings), old = props[key];
+    set<V extends any>(on: LayoutItem, key: string, value?: V) {
+        const props = on[layoutProps] || (on[layoutProps] = {}), old = props[key];
         props[key] = value;
         if (!this.loading && old !== value) {
             app.workspace.trigger(setEvent+key, on, value, old);
@@ -84,7 +81,7 @@ export class LayoutStorage extends Service {
         }
     }
 
-    unset<K extends keyof LayoutSettings>(on: LayoutItem, key: K) {
+    unset(on: LayoutItem, key: string) {
         const props = on[layoutProps];
         if (props?.hasOwnProperty(key)) {
             delete props[key];
@@ -94,9 +91,9 @@ export class LayoutStorage extends Service {
         }
     }
 
-    onSet<K extends keyof LayoutSettings>(
-        key: K,
-        callback: (on: LayoutItem, value?: LayoutSettings[K], old?: LayoutSettings[K]) => any,
+    onSet<V extends any>(
+        key: string,
+        callback: (on: LayoutItem, value?: V, old?: V) => any,
         ctx?: any,
     ): EventRef {
         return (app.workspace as Events).on(setEvent+key, callback, ctx);
@@ -197,7 +194,7 @@ function serializeSettings(old: () => any) {
 
 function loadSettings(where: HasLayoutSettings, state: any) {
     if (!where) return;
-    const props: LayoutSettings = state?.[layoutProps];
+    const props: any = state?.[layoutProps];
     if (props) where[layoutProps] = cloneValue(props);
     app.workspace.trigger(loadEvent, where, state);
 }
