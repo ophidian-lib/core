@@ -4,10 +4,10 @@ import { defer } from "../defer";
 import { around } from "monkey-around";
 import { isLeafAttached } from "./walk";
 
-type PWCFactory<T extends PerWindowComponent> = {
-    new (use: Context, container: WorkspaceContainer): T
-    onload(m: WindowManager<T>): void;
-    onunload(m: WindowManager<T>): void;
+export type PWCFactory<C extends PerWindowComponent> = {
+    new (use: Context, item: WorkspaceContainer): C
+    onload(use: Context): void;
+    onunload(use: Context): void;
 }
 
 /**
@@ -42,13 +42,13 @@ export class PerWindowComponent extends Component {
         super();
     }
 
-    [use.factory]() {
-        return new WindowManager(this.constructor as PWCFactory<typeof this>);
+    [use.factory](): WindowManager<this> {
+        return new WindowManager(this.constructor as PWCFactory<this>);
     }
 
     // Allow PWC's to provide a static initializer -- handy for setting up event dispatching
-    static onload(wm: WindowManager<typeof this.prototype>) {}
-    static onunload(wm: WindowManager<typeof this.prototype>) {}
+    static onload(use: Context) {}
+    static onunload(use: Context) {}
 }
 
 /**
@@ -74,7 +74,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
                 this.layoutReadyCallbacks = [];
             }
         }));
-        this.factory.onload?.(this);
+        this.factory.onload?.(this.use);
     }
 
     // Only get safe active-leaf-change events, plus get an initial one on workspace load
@@ -90,7 +90,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         if (app.workspace.layoutReady) defer(cb); else this.layoutReadyCallbacks.push(cb);
     }
 
-    onunload() { this.factory.onunload?.(this); }
+    onunload() { this.factory.onunload?.(this.use); }
 
     watch(): this {
         // Defer watch until plugin is loaded
