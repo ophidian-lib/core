@@ -1,16 +1,25 @@
 lockfileVersion: 5.3
 
 specifiers:
+  i18next: ^20.3.2
   monkey-around: ^2.3
   obsidian: 0.15.4
   to-use: ^0.2.1
 
 dependencies:
+  i18next: 20.6.1
   monkey-around: 2.3.0
   obsidian: 0.15.4
   to-use: 0.2.1
 
 packages:
+
+  /@babel/runtime/7.18.9:
+    resolution: {integrity: sha512-lkqXDcvlFT5rvEjiu6+QYO+1GXrEHRo2LOtS7E4GtX5ESIZOgepqsZBVIj6Pv+a6zqsya9VCgiK1KAK4BvJDAw==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.13.9
+    dev: false
 
   /@types/codemirror/0.0.108:
     resolution: {integrity: sha512-3FGFcus0P7C2UOGCNUVENqObEb4SFk+S8Dnxq7K6aIsLVs/vDtlangl3PEO0ykaKXyK56swVF6Nho7VsA44uhw==}
@@ -26,6 +35,12 @@ packages:
     resolution: {integrity: sha512-JAUw1iXGO1qaWwEOzxTKJZ/5JxVeON9kvGZ/osgZaJImBnyjyn0cjovPsf6FNLmyGY8Vw9DoXZCMlfMkMwHRWg==}
     dependencies:
       '@types/estree': 0.0.52
+    dev: false
+
+  /i18next/20.6.1:
+    resolution: {integrity: sha512-yCMYTMEJ9ihCwEQQ3phLo7I/Pwycf8uAx+sRHwwk5U9Aui/IZYgQRyMqXafQOw5QQ7DM1Z+WyEXWIqSuJHhG2A==}
+    dependencies:
+      '@babel/runtime': 7.18.9
     dev: false
 
   /moment/2.29.3:
@@ -44,6 +59,10 @@ packages:
     dependencies:
       '@types/codemirror': 0.0.108
       moment: 2.29.3
+    dev: false
+
+  /regenerator-runtime/0.13.9:
+    resolution: {integrity: sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==}
     dev: false
 
   /to-use/0.2.1:
