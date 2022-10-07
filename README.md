@@ -70,7 +70,7 @@ However, we didn't *have to* create that window manager on the plugin itself.  W
 
 Absolutely *none* of that is easy -- and most isn't even possible -- without Ophidian.  You would have to decide what part of your plugin will "own" subcomponents like that, and *every* part needs to know who that owner is and how to get to it.  Everything has to change if you change your mind, and none of the code is reusable across plugins.
 
-With Ophidian, you can just `.use()` service classes, without even needing to pass them a plugin instance, let alone doing the needed load/unload logic or deciding where a singleton service instance "should go" -- you just reference them where they're needed.  They don't even have to be attributes, unless you want them created when the using service or plugin is initialized.  You can just `.use()` them on-demand, unless they need to be loaded before they can be used.
+With Ophidian, you can just `.use()` service classes, without even needing to pass them a plugin instance, let alone doing the needed load/unload logic or deciding where a singleton service instance "should go" -- you just reference them where they're needed.  They don't even have to be attributes, unless you want them created when the service or plugin using them is initialized.  You can just `.use()` them on-demand, unless they need to be loaded before they can be used.
 
 ### Project Status
 
