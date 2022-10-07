@@ -1,4 +1,4 @@
-import { Component, View, WorkspaceContainer, WorkspaceLeaf } from "obsidian";
+import { Component, View, WorkspaceContainer, WorkspaceLeaf } from "../obsidian";
 import { Context, Service, use, onLoad, safeRemoveChild } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";

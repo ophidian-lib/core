@@ -1,4 +1,4 @@
-import { FuzzySuggestModal, Scope } from "obsidian";
+import { FuzzySuggestModal, Scope } from "../obsidian";
 import { defer } from "../defer";
 import { deferred } from "../deferred";
 

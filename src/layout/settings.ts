@@ -1,5 +1,5 @@
 import { around, dedupe } from "monkey-around";
-import { EventRef, Events, Workspace, WorkspaceItem } from "obsidian";
+import { EventRef, Events, Workspace, WorkspaceItem } from "../obsidian";
 import { walkLayout } from "./walk";
 import { defer } from "../defer";
 import { Useful, Service } from "../services";

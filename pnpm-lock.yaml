@@ -3,13 +3,13 @@ lockfileVersion: 5.3
 specifiers:
   i18next: ^20.3.2
   monkey-around: ^2.3
-  obsidian: 0.15.4
+  obsidian: 0.15.9
   to-use: ^0.2.1
 
 dependencies:
   i18next: 20.6.1
   monkey-around: 2.3.0
-  obsidian: 0.15.4
+  obsidian: 0.15.9
   to-use: 0.2.1
 
 packages:
@@ -27,15 +27,13 @@ packages:
       '@types/tern': 0.23.4
     dev: false
 
-  /@types/estree/0.0.52:
-    resolution: {integrity: sha512-BZWrtCU0bMVAIliIV+HJO1f1PR41M7NKjfxrFJwwhKI1KwhwOxYw1SXg9ao+CIMt774nFuGiG6eU+udtbEI9oQ==}
-    dev: false
+  /@types/estree/1.0.0:
+    resolution: {integrity: sha512-WulqXMDUTYAXCjZnk6JtIHPigp55cVtDgDrO2gHRwhyJto21+1zbVCtOYB2L1F9w4qCQ0rOGWBnBe0FNTiEJIQ==}
 
   /@types/tern/0.23.4:
     resolution: {integrity: sha512-JAUw1iXGO1qaWwEOzxTKJZ/5JxVeON9kvGZ/osgZaJImBnyjyn0cjovPsf6FNLmyGY8Vw9DoXZCMlfMkMwHRWg==}
     dependencies:
-      '@types/estree': 0.0.52
-    dev: false
+      '@types/estree': 1.0.0
 
   /i18next/20.6.1:
     resolution: {integrity: sha512-yCMYTMEJ9ihCwEQQ3phLo7I/Pwycf8uAx+sRHwwk5U9Aui/IZYgQRyMqXafQOw5QQ7DM1Z+WyEXWIqSuJHhG2A==}
@@ -43,22 +41,22 @@ packages:
       '@babel/runtime': 7.18.9
     dev: false
 
-  /moment/2.29.3:
-    resolution: {integrity: sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw==}
+  /moment/2.29.4:
+    resolution: {integrity: sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==}
     dev: false
 
   /monkey-around/2.3.0:
     resolution: {integrity: sha512-QWcCUWjqE/MCk9cXlSKZ1Qc486LD439xw/Ak8Nt6l2PuL9+yrc9TJakt7OHDuOqPRYY4nTWBAEFKn32PE/SfXA==}
     dev: false
 
-  /obsidian/0.15.4:
-    resolution: {integrity: sha512-FE11CxxpVD6t/DBvjLvlT7q7YYW91ubTqPKIIp286LdnyLipS8Xi3Tif8i8ALPv87Vg9obKM43aWcPsYLxLllQ==}
+  /obsidian/0.15.9:
+    resolution: {integrity: sha512-w3JL/IM3/U61rjFSFIFDSv+pcHn3mH1EIRN40kBkC/lGYqjFSPbr6daQe08QkskBz/GAYIeBoaKQIcgU9vV3LQ==}
     peerDependencies:
       '@codemirror/state': ^6.0.0
       '@codemirror/view': ^6.0.0
     dependencies:
       '@types/codemirror': 0.0.108
-      moment: 2.29.3
+      moment: 2.29.4
     dev: false
 
   /regenerator-runtime/0.13.9:

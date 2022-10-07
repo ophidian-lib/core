@@ -16,7 +16,7 @@
   "dependencies": {
     "i18next": "^20.3.2",
     "monkey-around": "^2.3",
-    "obsidian": "0.15.4",
+    "obsidian": "0.15.9",
     "to-use": "^0.2.1"
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Plugin } from "obsidian";
+import { Component, Plugin } from "./obsidian";
 import { use } from "to-use";
 import { defer } from "./defer";
 export * from "to-use";
