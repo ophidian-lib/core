@@ -99,12 +99,12 @@ export class LayoutStorage extends Service {
         return (app.workspace as Events).on(setEvent+key, callback, ctx);
     }
 
-    onLoadItem(callback: (on: LayoutItem, state: any) => any, ctx?: any): EventRef {
+    onLoadItem(callback: (on: LayoutItem, state?: any) => any, ctx?: any): EventRef {
         if (!this.loading && app.workspace.layoutReady) {
             // A workspace is already loaded; trigger events as microtask
             defer(() => {
                 walkLayout(item => {
-                    try { callback.call(ctx); } catch (e) { console.error(e); }
+                    try { callback.call(ctx, item); } catch (e) { console.error(e); }
                 })
             });
         }
