@@ -1,51 +1,20 @@
-import { Modal } from "../obsidian";
 import { deferred } from "../deferred";
-
-export class Dialog extends Modal {
-    buttonContainerEl = this.modalEl.createDiv("modal-button-container");
-
-    onOK: (e: MouseEvent|KeyboardEvent) => any
-
-    constructor() {
-        super(app);
-        this.containerEl.addClass("mod-confirmation");
-    }
-
-    addOKButton(onClick: (e: MouseEvent|KeyboardEvent) => any, text="OK") {
-        this.onOK = onClick;
-        return this.addButton("mod-cta", text, onClick);
-    }
-
-    addButton(cls: string, text: string, onClick: (e: MouseEvent) => void | boolean | PromiseLike<void|boolean>) {
-        this.buttonContainerEl.createEl("button", {cls, text}).addEventListener("click", async e => {
-            if (!await onClick(e)) this.close();
-        });
-        return this;
-    }
-
-    addCancelButton(callback?: () => any) {
-       return this.addButton("", i18next.t("dialogue.button-cancel"), () => (this.close(), callback && callback()));
-    }
-
-    setContent(c: string | Node) {
-        if (String.isString(c)) this.contentEl.setText(c); else this.containerEl.appendChild(c);
-        return this;
-    }
-
-    setTitle(title: string) {
-        this.titleEl.setText(title);
-        return this;
-    }
-
-    setup(callback: (modal: this) => any) {
-        callback && callback(this);
-        return this;
-    }
-
-}
+import { Dialog } from "./dialog";
 
 export class Prompt extends Dialog {
     value: string | false = false;
+
+    onOK(_) {
+        const {value} = this.inputEl;
+        if (!this.isValid(value)) {
+            this.handleInvalidEntry(value);
+            return true; // refuse entry
+        }
+        this.value = this.inputEl.value;
+    }
+
+    isValid(t: string) { return true; }
+    handleInvalidEntry(t: string) { return; }
 
     setting = this.contentEl.createDiv("is-mobile"); // hack for reasonable text box
     inputEl = this.setting.createEl("input", {type:"text"}, inputEl => {
@@ -64,10 +33,25 @@ export class Prompt extends Dialog {
         return this;
     }
 
+    setPattern(pattern: string) {
+        this.inputEl.pattern = pattern;
+        return this.setValidator(v => new RegExp(`^${pattern}$`).test(v));
+    }
+
+    setValidator(isValid: (s: string) => boolean) {
+        this.isValid = isValid
+        this.inputEl.oninput = () => this.inputEl.setAttribute("aria-invalid", "" + !isValid(this.inputEl.value));
+        return this;
+    }
+
+    onInvalidEntry(callback: (t: string) => void) {
+        this.handleInvalidEntry = callback;
+        return this;
+    }
+
     prompt(): Promise<string|false> {
-        const {resolve, promise} = deferred<string|false>();
-        this.addOKButton(() => { this.value = this.inputEl.value; }); // inputEl value XXX
         this.addCancelButton();
+        const {resolve, promise} = deferred<string|false>();
         this.onClose = () => resolve(this.value);
         this.open();
         this.inputEl.select();
