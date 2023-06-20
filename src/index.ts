@@ -1,5 +1,6 @@
 export * from "./clone-value";
 export * from "./services";
+export * from "./localStorage";
 export * from "./layout";
 export * from "./defer";
 export * from "./dom";

@@ -1,6 +1,6 @@
 {
   "name": "@ophidian/core",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "A Component framework for Obsidian Plugins",
   "keywords": [
     "obsidian"
@@ -11,9 +11,10 @@
   "type": "module",
   "module": "src/index.ts",
   "exports": {
-    ".":       "./src/index.ts"
+    ".": "./src/index.ts"
   },
   "dependencies": {
+    "defaults": "^2.0.1",
     "i18next": "^20.3.2",
     "monkey-around": "^2.3",
     "obsidian": "1.2.8",

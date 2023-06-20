@@ -1,12 +1,14 @@
 lockfileVersion: 5.3
 
 specifiers:
+  defaults: ^2.0.1
   i18next: ^20.3.2
   monkey-around: ^2.3
   obsidian: 1.2.8
   to-use: ^0.2.1
 
 dependencies:
+  defaults: 2.0.1
   i18next: 20.6.1
   monkey-around: 2.3.0
   obsidian: 1.2.8
@@ -35,6 +37,11 @@ packages:
     resolution: {integrity: sha512-JAUw1iXGO1qaWwEOzxTKJZ/5JxVeON9kvGZ/osgZaJImBnyjyn0cjovPsf6FNLmyGY8Vw9DoXZCMlfMkMwHRWg==}
     dependencies:
       '@types/estree': 1.0.0
+    dev: false
+
+  /defaults/2.0.1:
+    resolution: {integrity: sha512-1bGZaOcfpx0Iyxc0SqSIJ8O2WZF8xm56p4Yd4be+VxYQlFM5/4Mx3IMZqi96Npl8EsBG2pePlyGVLdqsmtIkag==}
+    engines: {node: '>=16'}
     dev: false
 
   /i18next/20.6.1:
