@@ -9,6 +9,8 @@ The Ophidian core library solves the component access problem by making it easy 
 In addition, the library also includes a variety of components and functions that are commonly useful for making advanced Obsidian plugins:
 
 - Services for managing window-specific UI components (for supporting Obsidian 0.15+'s multi-window feature), now used in Pane Relief and Quick Explorer for extending their UIs to multiple windows.
+- A settings tab builder that eliminates the need to have a separate class that depends on the plugin class and every one of its services or features.  (Just add `settingsTab = settingsTab(this)` and a `showSettings()` method to your plugin class.)
+- Promise-based dialog implementations for prompts, confirmation, suggestion, etc., without needing to wrestle with all the onHide/onClose stuff
 - "Layout Settings" services for storing persistent settings on the Obsidian workspace or specific items in it (windows, leaves, splits, etc.), with full support for Obsidian's workspaces plugin.  (See Pane Relief's "Focus Lock" feature for a simple usage example.)
 - Miscellaneous functions for deferring execution, walking the Obsidian workspace component tree, creating delegated event listeners, etc.
 

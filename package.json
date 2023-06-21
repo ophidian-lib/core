@@ -5,7 +5,7 @@
   "keywords": [
     "obsidian"
   ],
-  "repository": "https://github.com/pjeby/ophidian.git",
+  "repository": "https://github.com/ophidian-lib/core.git",
   "author": "PJ Eby",
   "license": "ISC",
   "type": "module",
