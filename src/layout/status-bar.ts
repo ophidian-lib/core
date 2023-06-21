@@ -14,7 +14,7 @@ export function statusBarItem(
     container = null;
     owner.register(() => defer(() => { // allow for other unload operations to finish
         statusBarItem = maybeDetach(statusBarItem);
-        statusBar     = maybeDetach(statusBar);
+        if (win !== window) statusBar = maybeDetach(statusBar);
     }));
     owner.use(Plugin).register(() => statusBarItem && statusBarItem.detach());
     return statusBarItem;
