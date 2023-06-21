@@ -13,6 +13,8 @@ export class LocalObject<T extends {}> extends Component {
         this.defaultJSON = JSON.stringify(defaults);
     }
 
+    get() { return this.parseWithDefaults(localStorage[this.key]); }
+
     modify<R>(fn: (val: T) => R, leaseTime=1000): Promise<R> {
         return this.withLock(() => {
             const
@@ -61,7 +63,8 @@ export class LocalObject<T extends {}> extends Component {
     }
 
     onload(): void {
-        this._update(this.parseWithDefaults(localStorage[this.key]));
+        if (!this.onChange) return;
+        this._update(this.get());
         this.registerDomEvent(window, "storage", e => {
             if (e.key !== this.key || e.oldValue === e.newValue) return;
             this._update(this.parseWithDefaults(e.newValue));
@@ -69,7 +72,6 @@ export class LocalObject<T extends {}> extends Component {
     }
 
     protected _update(value: T) {
-        // Update value cache and trigger callback asynchronously
         Promise.resolve(value).then(this.onChange);
     }
 }
