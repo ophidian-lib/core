@@ -1,6 +1,6 @@
 {
   "name": "@ophidian/core",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "A Component framework for Obsidian Plugins",
   "keywords": [
     "obsidian"

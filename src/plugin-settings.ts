@@ -9,7 +9,7 @@ import { cloneValue } from "./clone-value";
  *
  * useSettings() lets you avoid code duplication, boilerplate, and unnecessary
  * use of the `async onload()` anti-pattern, while also allowing settings
- * management to be divided among plugins.
+ * management to be divided among multiple components.
  *
  * Just give it a callback that will be invoked with new settings values (including
  * when the settings initially load), and you get back a {@link SettingsService}
@@ -49,7 +49,7 @@ export function useSettings<T>(
     applySettings?: (settings: T) => void
 ) {
     const svc = getContext(owner)(SettingsService) as SettingsService<T>;
-    if (defaultSettings) svc.withDefaults(defaultSettings);
+    if (defaultSettings) svc.addDefaults(defaultSettings);
     if (applySettings) owner.registerEvent(svc.onChange(applySettings));
     return svc;
 }
@@ -60,7 +60,7 @@ export class SettingsService<T extends {}> extends Service {
     private queue = taskQueue();
     private data = {} as T;
 
-    withDefaults(settings: T) {
+    addDefaults(settings: T) {
         // We can do this without queueing, as it will not update existing values,
         // and if the values are defaults, there's no need to trigger an event.
         this.data = <T> defaults(this.data, settings);
