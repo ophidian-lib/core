@@ -1,32 +1,24 @@
-import { Plugin, PluginSettingTab, Setting } from "../obsidian";
-import { onLoad } from "../services";
+import { Component, Plugin, PluginSettingTab, Setting } from "../obsidian";
+import { Useful, getContext, onLoad, use } from "../services";
 
-export interface PluginWithSettingsTab extends Plugin {
+export interface SettingsProvider extends Component {
     showSettings?(builder: SettingsTabBuilder): void
     hideSettings?(builder: SettingsTabBuilder): void
 }
 
-export function settingsTab(plugin: PluginWithSettingsTab) {
-    return new SettingsTabBuilder(plugin);
+export function useSettingsTab(owner: SettingsProvider & Partial<Useful>) {
+    return getContext(owner)(SettingsTabBuilder).addProvider(owner);
 }
 
 export class SettingsTabBuilder extends PluginSettingTab implements FieldParent {
 
-    constructor(plugin: PluginWithSettingsTab) {
+    constructor() {
+        const plugin = use(Plugin);
         super(app, plugin);
         onLoad(plugin, () => plugin.addSettingTab(this));
-        if (plugin.showSettings) {
-            this.onDisplay(() => plugin.showSettings(this));
-            if (!plugin.hideSettings) {
-                this.onHide(() => this.clear());
-            }
-        }
-        if (plugin.hideSettings) {
-            this.onHide(() => plugin.hideSettings(this));
-        }
     }
 
-    clear() { this.containerEl.empty(); }
+    clear() { this.containerEl.empty(); return this; }
 
     field(parentEl=this.containerEl) { return new FieldBuilder(this, parentEl); }
 
@@ -35,14 +27,24 @@ export class SettingsTabBuilder extends PluginSettingTab implements FieldParent 
         return this;
     }
 
+    addProvider(provider: SettingsProvider) {
+        if (provider.showSettings) {
+            this.onDisplay(() => provider._loaded && provider.showSettings(this));
+        }
+        if (provider.hideSettings) {
+            this.onHide(() => provider._loaded && provider.hideSettings(this));
+        }
+        return this;
+    }
+
     onDisplay(cb?: (s: SettingsTabBuilder) => any){ this.onDispCb = chain(this.onDispCb, cb); }
-    onHide(   cb?: (s: SettingsTabBuilder) => any){ this.onHideCb = chain(this.onHideCb, cb); }
+    onHide(   cb?: (s: SettingsTabBuilder) => any){ this.onHideCb = chain(cb, this.onHideCb); }
 
     protected onDispCb?: (s: SettingsTabBuilder) => any
     protected onHideCb?: (s: SettingsTabBuilder) => any
 
     display() { this.onDispCb?.(this); }
-    hide()    { this.onHideCb?.(this); }
+    hide()    { if (this.onHideCb) this.onHideCb?.(this); else this.clear(); }
 }
 
 interface FieldParent {
