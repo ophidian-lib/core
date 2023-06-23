@@ -5,14 +5,14 @@ specifiers:
   i18next: ^20.3.2
   monkey-around: ^2.3
   obsidian: 1.2.8
-  to-use: ^0.2.1
+  to-use: ^0.3.0
 
 dependencies:
   defaults: 2.0.1
   i18next: 20.6.1
   monkey-around: 2.3.0
   obsidian: 1.2.8
-  to-use: 0.2.1
+  to-use: 0.3.0
 
 packages:
 
@@ -72,6 +72,6 @@ packages:
     resolution: {integrity: sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==}
     dev: false
 
-  /to-use/0.2.1:
-    resolution: {integrity: sha512-FwF0QIePeaY/Wk2thTjjV41KltJZsMTidH33R64u76Ai+IDyXI4cLYA5PH2PjQRyxAKVtDgcN1ZPK5JJh102Vw==}
+  /to-use/0.3.0:
+    resolution: {integrity: sha512-x5955RfSLQEOv5MzyUKF4u6cQcOQoQ/YT0LeC1V44YzVhyKxanykyN9WQ/pNJ0iYFYAE+195MEs5wZUQfrf66Q==}
     dev: false
