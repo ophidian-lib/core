@@ -76,6 +76,7 @@ export class LayoutStorage extends Service {
         const props = on[layoutProps] || (on[layoutProps] = {}), old = props[key];
         props[key] = value;
         if (!this.loading && old !== value) {
+            // TODO: we should not trigger this during serialize!  XXX
             app.workspace.trigger(setEvent+key, on, value, old);
             app.workspace.requestSaveLayout();
         }

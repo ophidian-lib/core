@@ -1,4 +1,4 @@
-import { Component } from "obsidian";
+import { Component } from "./obsidian";
 import defaults from "defaults";
 
 export class LocalObject<T extends {}> extends Component {
