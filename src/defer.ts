@@ -8,11 +8,11 @@ export const defer: (cb: () => any) => void = window.queueMicrotask ?? (p => (cb
  * optional onfulfilled and onrejected callback.  If no onrejected callback is supplied, `console.error`
  * is used.
  */
-export function taskQueue() {
-    let last = Promise.resolve();
-    return (onfulfilled?: (val: any) => void|PromiseLike<void>, onrejected?: (reason: any) => void|PromiseLike<void>) => {
+export function taskQueue<T>(initalValue?: T) {
+    let last = Promise.resolve(initalValue) as Promise<T>;
+    return (onfulfilled?: (val: T) => T|PromiseLike<T>, onrejected?: (reason: any) => T|PromiseLike<T>) => {
         if (onfulfilled || onrejected) {
-            if (typeof onrejected === "undefined") onrejected = console.error;
+            if (typeof onrejected === "undefined") onrejected = console.error as typeof onrejected;
             return last = last.then(onfulfilled, onrejected);
         }
         return last;
