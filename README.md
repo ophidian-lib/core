@@ -9,6 +9,7 @@ The Ophidian core library solves the component access problem by making it easy 
 In addition, the library also includes a variety of components and functions that are commonly useful for making advanced Obsidian plugins:
 
 - Services for managing window-specific UI components (for supporting Obsidian 0.15+'s multi-window feature), now used in Pane Relief and Quick Explorer for extending their UIs to multiple windows.
+- A simplified settings management tool (`useSettings()`) that replaces the usual loadData/saveData dance, code duplication, state management errors, and the `aysnc onload()` antipattern
 - A settings tab builder that eliminates the need to have a separate class that depends on the plugin class and every one of its services or features.  (Just add `settingsTab = settingsTab(this)` and a `showSettings()` method to your plugin class.)
 - Promise-based dialog implementations for prompts, confirmation, suggestion, etc., without needing to wrestle with all the onHide/onClose stuff
 - "Layout Settings" services for storing persistent settings on the Obsidian workspace or specific items in it (windows, leaves, splits, etc.), with full support for Obsidian's workspaces plugin.  (See Pane Relief's "Focus Lock" feature for a simple usage example.)
@@ -59,7 +60,7 @@ This example plugin will load a ClickDetector object for each open window, and m
 
 The Ophidian core framework wraps the  [to-use](https://github.com/pjeby/to-use/) service container, exporting all of its functions and types, but with a few Obsidian-specific twists:
 
-- `use.plugin(pluginThis)` - needed to create a `.use()` method on your plugin
+- `use = use.plugin(this)` - needed to create a `.use()` method on your plugin
 - `Service` -- a class you can subclass to create a "service": an Obsidian `Component` that can be looked up with `.use()` and will load and unload correctly with the plugin
 
 So, if you want to split parts of your plugin into separate components, you can just make `Service` subclasses, and then `.use()` them from your plugin.

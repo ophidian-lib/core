@@ -1,10 +1,11 @@
 export * from "./clone-value";
-export * from "./services";
-export * from "./localStorage";
-export * from "./layout";
 export * from "./defer";
 export * from "./deferred";
 export * from "./dom";
+export * from "./layout";
+export * from "./localStorage";
+export * from "./plugin-settings";
+export * from "./services";
 export * from "./ui";
 
 // These exports use CSS and must be explicitly exported to

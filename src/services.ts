@@ -1,9 +1,20 @@
 import { Component, Plugin } from "./obsidian";
-import { use } from "to-use";
+import { Context, Useful, use } from "to-use";
 import { defer } from "./defer";
 export * from "to-use";
 
 use.def(Plugin, () => { throw new Error("Plugin not created yet"); });
+
+let rootCtx: Context;
+
+export function getContext(parent: Partial<Useful>) {
+    if (parent?.use) return parent.use;
+    if (rootCtx) return rootCtx;
+    if (parent instanceof Plugin) {
+        return parent.use = use.plugin(parent);
+    }
+    throw new Error("No context available: did you forget to `use.plugin()`?");
+}
 
 declare module "to-use" {
     interface GlobalContext {
@@ -22,14 +33,17 @@ use.service = function service(service: Component) {
 }
 
 use.plugin = function plugin(plugin: Plugin) {
-    // Register the plugin under its generic and concrete types
-    const ctx = use.fork()
-        .set(Plugin, plugin)
-        .set(plugin.constructor, plugin)
-    ;
-    // ensure boot service loads and unloads with the plugin
-    plugin.addChild(ctx.use(Bootloader))
-    return ctx;
+    if (!rootCtx) {
+        rootCtx = use.fork();
+        // Register the plugin under its generic and concrete types
+        rootCtx.set(Plugin, plugin);
+        rootCtx.set(plugin.constructor, plugin);
+        // ensure boot service loads and unloads with the (root) plugin
+        plugin.addChild(rootCtx.use(Bootloader));
+    } else if (plugin !== rootCtx.use(Plugin)) {
+        throw new TypeError("use.plugin() called on multiple plugins");
+    }
+    return rootCtx;
 }
 
 /** Service manager to ensure services load and unload with the plugin in an orderly manner */
