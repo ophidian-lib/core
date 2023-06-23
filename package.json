@@ -13,6 +13,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "sideEffects": false,
   "dependencies": {
     "defaults": "^2.0.1",
     "i18next": "^20.3.2",

@@ -1,5 +1,5 @@
 import { Component, View, WorkspaceContainer, WorkspaceLeaf } from "../obsidian";
-import { Context, Service, onLoad, safeRemoveChild } from "../services";
+import { Context, Service, onLoad, safeRemoveChild, use } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";
 import { isLeafAttached } from "./walk";
@@ -42,7 +42,7 @@ export class PerWindowComponent extends Component {
         super();
     }
 
-    "use.factory"() {
+    [use.factory]() {
         return new WindowManager(this.constructor as PWCFactory<this>);
     }
 
