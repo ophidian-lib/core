@@ -74,7 +74,6 @@ export class SettingsService<T extends {}> extends Service {
                 (await this.plugin.loadData()) ?? {},
                 cloneValue(this.data)
             )
-            this.events.trigger("change", cloneValue(this.data));
         }, console.error)
     }
 
