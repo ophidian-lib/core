@@ -68,9 +68,9 @@ class Bootloader extends Component { // not a service, so it doesn't end up depe
     }
 }
 
-// This function can be dropped when 0.15 is no longer supported
+/** Remove a child component safely even if the parent is loading (unsafe in all Obsidians) or unloading (unsafe before 1.0) */
 export function safeRemoveChild(parent: Component, child: Component) {
-    if (parent._loaded) parent.removeChild(child);
+    defer(() => parent.removeChild(child));
 }
 
 export function onLoad(component: Component, callback: () => any) {
