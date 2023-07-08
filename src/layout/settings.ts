@@ -1,5 +1,5 @@
 import { around, dedupe } from "monkey-around";
-import { EventRef, Events, Workspace, WorkspaceItem } from "../obsidian";
+import { obsidian as o } from "../obsidian";
 import { walkLayout } from "./walk";
 import { defer } from "../defer";
 import { Useful, Service } from "../services";
@@ -16,7 +16,7 @@ declare module "obsidian" {
 }
 
 /** Things that can have layout-stored settings  */
-export type LayoutItem = WorkspaceItem | Workspace;
+export type LayoutItem = o.WorkspaceItem | o.Workspace;
 
 export class LayoutSetting<V extends any, T extends LayoutItem> {
 
@@ -43,24 +43,24 @@ export class LayoutSetting<V extends any, T extends LayoutItem> {
     }
 
     requires(on: LayoutItem) {
-        if (on && (on instanceof Workspace || on instanceof WorkspaceItem)) return on;
+        if (on && (on instanceof o.Workspace || on instanceof o.WorkspaceItem)) return on;
         throw new TypeError("Setting method requires a workspace or workspace item")
     }
 
     onSet(callback: (
         on: LayoutItem, value?: V, old?: V) => any, ctx?: any
-    ): EventRef {
+    ): o.EventRef {
         if (this.owner) return this.store.onSet(this.key, (on, val, old) => {
             if (on === this.owner) callback.call(ctx, val, old);
         });
         return this.store.onSet(this.key, callback, ctx);
     }
 
-    onLoadWorkspace(callback: () => any, ctx?: any): EventRef {
+    onLoadWorkspace(callback: () => any, ctx?: any): o.EventRef {
         return this.store.onLoadWorkspace(callback, ctx);
     }
 
-    offref(ref: EventRef) {
+    offref(ref: o.EventRef) {
         this.store.offref(ref);
     }
 }
@@ -96,11 +96,11 @@ export class LayoutStorage extends Service {
         key: string,
         callback: (on: LayoutItem, value?: V, old?: V) => any,
         ctx?: any,
-    ): EventRef {
-        return (app.workspace as Events).on(setEvent+key, callback, ctx);
+    ): o.EventRef {
+        return (app.workspace as o.Events).on(setEvent+key, callback, ctx);
     }
 
-    onLoadItem(callback: (on: LayoutItem, state?: any) => any, ctx?: any): EventRef {
+    onLoadItem(callback: (on: LayoutItem, state?: any) => any, ctx?: any): o.EventRef {
         if (!this.loading && app.workspace.layoutReady) {
             // A workspace is already loaded; trigger events as microtask
             defer(() => {
@@ -109,31 +109,31 @@ export class LayoutStorage extends Service {
                 })
             });
         }
-        return (app.workspace as Events).on(loadEvent, callback, ctx);
+        return (app.workspace as o.Events).on(loadEvent, callback, ctx);
     }
 
-    onSaveItem(callback: (on: LayoutItem, state: any) => any, ctx?: any): EventRef {
-        return (app.workspace as Events).on(saveEvent, callback, ctx);
+    onSaveItem(callback: (on: LayoutItem, state: any) => any, ctx?: any): o.EventRef {
+        return (app.workspace as o.Events).on(saveEvent, callback, ctx);
     }
 
-    onLoadWorkspace(callback: () => any, ctx?: any): EventRef {
+    onLoadWorkspace(callback: () => any, ctx?: any): o.EventRef {
         if (!this.loading && app.workspace.layoutReady) {
             // A workspace is already loaded; trigger event as microtask
             defer(() => {
                 try { callback.call(ctx); } catch (e) { console.error(e); }
             });
         }
-        return (app.workspace as Events).on(loadEvent+":workspace", callback, ctx);
+        return (app.workspace as o.Events).on(loadEvent+":workspace", callback, ctx);
     }
 
-    offref(ref: EventRef) {
+    offref(ref: o.EventRef) {
         app.workspace.offref(ref);
     }
 
     loading = false;
 
     onload() {
-        const events = app.workspace as Events;
+        const events = app.workspace as o.Events;
 
         // We have to use the events because another plugin's instance of this service
         // might be handling the monkeypatches and triggering the events, but *all* instances
@@ -144,7 +144,7 @@ export class LayoutStorage extends Service {
         this.registerEvent(events.on(loadEvent+":workspace", () => this.loading = false));
 
         // Save settings as each item is serialized
-        this.register(around(WorkspaceItem.prototype, {serialize: serializeSettings}));
+        this.register(around(o.WorkspaceItem.prototype, {serialize: serializeSettings}));
 
         this.register(around(app.workspace, {
             // Save settings with workspace layout serialization
@@ -152,7 +152,7 @@ export class LayoutStorage extends Service {
 
             // Load workspace settings as workspace is loading
             setLayout(old) {
-                return dedupe(STORAGE_EVENTS, old, async function setLayout(this: Workspace, layout: any, ...etc) {
+                return dedupe(STORAGE_EVENTS, old, async function setLayout(this: o.Workspace, layout: any, ...etc) {
                     events.trigger(loadEvent+":start");
                     try {
                         loadSettings(this, layout);

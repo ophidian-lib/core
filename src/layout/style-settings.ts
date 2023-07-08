@@ -1,6 +1,6 @@
 import { around } from "monkey-around";
 import { Service } from "../services";
-import { Plugin } from "../obsidian";
+import { obsidian as o } from "../obsidian";
 
 /** use() this to make your plugin support dynamic Style Settings
  *
@@ -14,7 +14,7 @@ import { Plugin } from "../obsidian";
 **/
 export class StyleSettings extends Service {
     onload() {
-        const self = this, plugin = this.use(Plugin);
+        const self = this, plugin = this.use(o.Plugin);
         this.register(around(plugin, {
             loadCSS(old) { return async function() {
                 await old.call(this);

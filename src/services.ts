@@ -1,16 +1,16 @@
-import { Component, Plugin } from "./obsidian";
+import { obsidian as o } from "./obsidian";
 import { Context, Useful, use } from "to-use";
 import { defer } from "./defer";
 export * from "to-use";
 
-use.def(Plugin, () => { throw new Error("Plugin not created yet"); });
+use.def(o.Plugin, () => { throw new Error("Plugin not created yet"); });
 
 let rootCtx: Context;
 
 export function getContext(parent: Partial<Useful>) {
     if (parent?.use) return parent.use;
     if (rootCtx) return rootCtx;
-    if (parent instanceof Plugin) {
+    if (parent instanceof o.Plugin) {
         return parent.use = use.plugin(parent);
     }
     throw new Error("No context available: did you forget to `use.plugin()`?");
@@ -18,43 +18,43 @@ export function getContext(parent: Partial<Useful>) {
 
 declare module "to-use" {
     interface GlobalContext {
-        service(service: Component): Context
-        plugin(plugin: Plugin): Context
+        service(service: o.Component): Context
+        plugin(plugin: o.Plugin): Context
     }
 }
 
-export class Service extends Component {
+export class Service extends o.Component {
     use = use.service(this)
 }
 
-use.service = function service(service: Component) {
+use.service = function service(service: o.Component) {
     use(Bootloader).addChild(service)
     return use.this;
 }
 
-use.plugin = function plugin(plugin: Plugin) {
+use.plugin = function plugin(plugin: o.Plugin) {
     if (!rootCtx) {
         rootCtx = use.fork();
         // Register the plugin under its generic and concrete types
-        rootCtx.set(Plugin, plugin);
+        rootCtx.set(o.Plugin, plugin);
         rootCtx.set(plugin.constructor, plugin);
         // ensure boot service loads and unloads with the (root) plugin
         plugin.addChild(rootCtx.use(Bootloader));
-    } else if (plugin !== rootCtx.use(Plugin)) {
+    } else if (plugin !== rootCtx.use(o.Plugin)) {
         throw new TypeError("use.plugin() called on multiple plugins");
     }
     return rootCtx;
 }
 
 /** Service manager to ensure services load and unload with the plugin in an orderly manner */
-class Bootloader extends Component { // not a service, so it doesn't end up depending on itself
+class Bootloader extends o.Component { // not a service, so it doesn't end up depending on itself
     loaded: boolean;
-    children: Set<Component> = new Set([this]);
+    children: Set<o.Component> = new Set([this]);
 
     onload() { this.loaded = true; }
     onunload() { this.loaded = false; this.children.clear(); }
 
-    addChild<T extends Component>(service: T): T {
+    addChild<T extends o.Component>(service: T): T {
         if (!this.children.has(service)) {
             this.children.add(service);
             if (this.loaded) {
@@ -69,12 +69,12 @@ class Bootloader extends Component { // not a service, so it doesn't end up depe
 }
 
 /** Remove a child component safely even if the parent is loading (unsafe in all Obsidians) or unloading (unsafe before 1.0) */
-export function safeRemoveChild(parent: Component, child: Component) {
+export function safeRemoveChild(parent: o.Component, child: o.Component) {
     defer(() => parent.removeChild(child));
 }
 
-export function onLoad(component: Component, callback: () => any) {
-    const child = new Component();
+export function onLoad(component: o.Component, callback: () => any) {
+    const child = new o.Component();
     child.onload = () => { safeRemoveChild(component, child); component = null; callback(); }
     component.addChild(child);
 }

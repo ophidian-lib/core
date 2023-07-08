@@ -1,11 +1,11 @@
-import { Component, View, WorkspaceContainer, WorkspaceLeaf } from "../obsidian";
+import { obsidian as o } from "../obsidian";
 import { Context, Service, onLoad, safeRemoveChild, use } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";
 import { isLeafAttached } from "./walk";
 
 export type PWCFactory<C extends PerWindowComponent> = {
-    new (use: Context, item: WorkspaceContainer): C
+    new (use: Context, item: o.WorkspaceContainer): C
     onload(use: Context): void;
     onunload(use: Context): void;
 }
@@ -34,11 +34,11 @@ export type PWCFactory<C extends PerWindowComponent> = {
  * and automatically, you can leave off the `.watch()` call, e.g.
  * `titleWidget = this.use(TitleWidget)` instead.
  */
-export class PerWindowComponent extends Component {
+export class PerWindowComponent extends o.Component {
 
     win = this.container.win;
 
-    constructor(public use: Context, public container: WorkspaceContainer) {
+    constructor(public use: Context, public container: o.WorkspaceContainer) {
         super();
     }
 
@@ -56,7 +56,7 @@ export class PerWindowComponent extends Component {
  */
 export class WindowManager<T extends PerWindowComponent> extends Service {
 
-    instances = new Map<WorkspaceContainer, T>();
+    instances = new Map<o.WorkspaceContainer, T>();
 
     constructor (
         public factory: PWCFactory<T>,  // The class of thing to manage
@@ -78,7 +78,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     }
 
     // Only get safe active-leaf-change events, plus get an initial one on workspace load
-    onLeafChange(cb: (leaf: WorkspaceLeaf) => any, ctx?: any) {
+    onLeafChange(cb: (leaf: o.WorkspaceLeaf) => any, ctx?: any) {
         this.onLayoutReady(() => cb.call(ctx, app.workspace.activeLeaf));
         return app.workspace.on("active-leaf-change", leaf => {
             if (app.workspace.layoutReady) cb.call(ctx, leaf);
@@ -125,7 +125,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         if (container) return this.forContainer(container, create);
     }
 
-    forContainer(container: WorkspaceContainer, create = true): T | undefined {
+    forContainer(container: o.WorkspaceContainer, create = true): T | undefined {
         container = container.getContainer(); // always get root-most container
         let inst = this.instances.get(container);
         if (!inst && create) {
@@ -149,11 +149,11 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         return this.forWindow(windowForDom(el), create);
     }
 
-    forLeaf(leaf: WorkspaceLeaf = app.workspace.activeLeaf, create = true): T | undefined {
+    forLeaf(leaf: o.WorkspaceLeaf = app.workspace.activeLeaf, create = true): T | undefined {
         if (isLeafAttached(leaf)) return this.forContainer(leaf.getContainer(), create);
     }
 
-    forView(view: View, create = true): T | undefined {
+    forView(view: o.View, create = true): T | undefined {
         return this.forLeaf(view.leaf, create);
     }
 
@@ -162,7 +162,7 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     }
 }
 
-export function allContainers(): WorkspaceContainer[] {
+export function allContainers(): o.WorkspaceContainer[] {
     return [app.workspace.rootSplit].concat(app.workspace.floatingSplit.children);
 }
 
@@ -185,7 +185,7 @@ export function windowForDom(el: Node) {
     return el.win || (el.ownerDocument || <Document>el).defaultView || window;
 }
 
-export function containerForWindow(win: Window): WorkspaceContainer {
+export function containerForWindow(win: Window): o.WorkspaceContainer {
     if (win === window) return app.workspace.rootSplit;
     const {floatingSplit} = app.workspace;
     if (floatingSplit) {
@@ -193,7 +193,7 @@ export function containerForWindow(win: Window): WorkspaceContainer {
     }
 }
 
-export function focusedContainer(): WorkspaceContainer | undefined {
+export function focusedContainer(): o.WorkspaceContainer | undefined {
     return allContainers().filter(c => c.win.document.hasFocus()).pop();
 }
 

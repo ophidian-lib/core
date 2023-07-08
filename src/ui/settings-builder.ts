@@ -1,7 +1,7 @@
-import { Component, Plugin, PluginSettingTab, Setting } from "../obsidian";
+import { obsidian as o } from "../obsidian";
 import { Useful, getContext, onLoad, use } from "../services";
 
-export interface SettingsProvider extends Component {
+export interface SettingsProvider extends o.Component {
     showSettings?(builder: SettingsTabBuilder): void
     hideSettings?(builder: SettingsTabBuilder): void
 }
@@ -10,10 +10,10 @@ export function useSettingsTab(owner: SettingsProvider & Partial<Useful>) {
     return getContext(owner)(SettingsTabBuilder).addProvider(owner);
 }
 
-export class SettingsTabBuilder extends PluginSettingTab implements FieldParent {
+export class SettingsTabBuilder extends o.PluginSettingTab implements FieldParent {
 
     constructor() {
-        const plugin = use(Plugin);
+        const plugin = use(o.Plugin);
         super(app, plugin);
         onLoad(plugin, () => plugin.addSettingTab(this));
     }
@@ -52,7 +52,7 @@ interface FieldParent {
     field(parentEl?: HTMLElement): FieldBuilder<this>
 }
 
-export class FieldBuilder<T extends FieldParent> extends Setting {
+export class FieldBuilder<T extends FieldParent> extends o.Setting {
     constructor(public builder: T, parentEl = builder.containerEl ) {
         super(parentEl);
     }

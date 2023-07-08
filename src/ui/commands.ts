@@ -1,6 +1,6 @@
 // Simplified Commands Framework
 
-import {Command, Hotkey, Modifier, Plugin} from "../obsidian";
+import type {Command, Hotkey, Modifier, Plugin} from "obsidian";
 
 type KeyDef = Hotkey | string
 

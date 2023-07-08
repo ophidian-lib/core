@@ -1,11 +1,11 @@
-import { Component, Plugin } from "../obsidian";
+import { obsidian as o } from "../obsidian";
 import { Useful } from "to-use";
 import { defer } from "../defer";
 
 export function statusBarItem(
-    owner: Component & Useful,
+    owner: o.Component & Useful,
     win: Window = window,
-    cls: string = "plugin-" + owner.use(Plugin).manifest.id.toLowerCase().replace(/[^_a-zA-Z0-9-]/, "-")
+    cls: string = "plugin-" + owner.use(o.Plugin).manifest.id.toLowerCase().replace(/[^_a-zA-Z0-9-]/, "-")
 ) {
     let container = win.document.querySelector("body > .app-container");
     let statusBar = container.find(".status-bar") || container.createDiv("status-bar");
@@ -16,7 +16,7 @@ export function statusBarItem(
         statusBarItem = maybeDetach(statusBarItem);
         if (win !== window) statusBar = maybeDetach(statusBar);
     }));
-    owner.use(Plugin).register(() => statusBarItem && statusBarItem.detach());
+    owner.use(o.Plugin).register(() => statusBarItem && statusBarItem.detach());
     return statusBarItem;
 }
 

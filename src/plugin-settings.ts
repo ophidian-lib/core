@@ -1,6 +1,6 @@
 import defaults from "defaults";
 import { taskQueue } from "./defer";
-import { Component, EventRef, Events, Plugin } from "./obsidian";
+import { obsidian as o } from "./obsidian";
 import { Service, Useful, getContext, onLoad } from "./services";
 import { cloneValue } from "./clone-value";
 
@@ -44,7 +44,7 @@ import { cloneValue } from "./clone-value";
  * @returns A {@link SettingsService} you can use to `.update()` the settings
  */
 export function useSettings<T>(
-    owner: Component & Partial<Useful>,
+    owner: o.Component & Partial<Useful>,
     defaultSettings?: T,
     applySettings?: (settings: T) => void
 ) {
@@ -55,8 +55,8 @@ export function useSettings<T>(
 }
 
 export class SettingsService<T extends {}> extends Service {
-    private events = new Events;
-    private plugin = this.use(Plugin);
+    private events = new o.Events;
+    private plugin = this.use(o.Plugin);
     private queue = taskQueue();
     private data = {} as T;
 
@@ -77,7 +77,7 @@ export class SettingsService<T extends {}> extends Service {
         }, console.error)
     }
 
-    onChange(callback: (settings: T) => any, ctx?: any): EventRef {
+    onChange(callback: (settings: T) => any, ctx?: any): o.EventRef {
         this.queue(() => callback(cloneValue(this.data)), console.error)
         return this.events.on("change", callback, ctx);
     }

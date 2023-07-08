@@ -15,4 +15,4 @@ declare global {
 }
 
 // Export Obsidian itself
-export * as o from "./obsidian";
+export { obsidian as o } from "./obsidian";
