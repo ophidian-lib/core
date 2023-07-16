@@ -120,10 +120,19 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         return this;
     }
 
+    forWindow(): T
+    forWindow(win: Window): T
+    forWindow(win: Window, create: true): T
+    forWindow(win: Window, create: boolean): T | undefined
+
     forWindow(win: Window = window.activeWindow ?? window, create = true): T | undefined {
         const container = containerForWindow(win);
         if (container) return this.forContainer(container, create);
     }
+
+    forContainer(container: o.WorkspaceContainer): T
+    forContainer(container: o.WorkspaceContainer, create: true): T
+    forContainer(container: o.WorkspaceContainer, create: boolean): T | undefined
 
     forContainer(container: o.WorkspaceContainer, create = true): T | undefined {
         container = container.getContainer(); // always get root-most container
@@ -145,13 +154,26 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
         return inst;
     }
 
+    forDom(el: HTMLElement): T
+    forDom(el: HTMLElement, create: true): T
+    forDom(el: HTMLElement, create: boolean): T | undefined
+
     forDom(el: HTMLElement, create = true): T | undefined {
         return this.forWindow(windowForDom(el), create);
     }
 
+    forLeaf(): T
+    forLeaf(leaf: o.WorkspaceLeaf): T
+    forLeaf(leaf: o.WorkspaceLeaf, create: true): T
+    forLeaf(leaf: o.WorkspaceLeaf, create: boolean): T | undefined
+
     forLeaf(leaf: o.WorkspaceLeaf = app.workspace.activeLeaf, create = true): T | undefined {
         if (isLeafAttached(leaf)) return this.forContainer(leaf.getContainer(), create);
     }
+
+    forView(view: o.View): T
+    forView(view: o.View, create: true): T
+    forView(view: o.View, create: boolean): T | undefined
 
     forView(view: o.View, create = true): T | undefined {
         return this.forLeaf(view.leaf, create);
