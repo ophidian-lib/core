@@ -1,9 +1,31 @@
 import { obsidian as o } from "./obsidian";
-import { Context, Useful, use } from "to-use";
+import { Context, Useful, use as _use } from "to-use";
 import { defer } from "./defer";
-export * from "to-use";
+export type * from "to-use";
 
-use.def(o.Plugin, () => { throw new Error("Plugin not created yet"); });
+export const use = (use => {
+    use.service = function service(service: o.Component) {
+        use(Bootloader).addChild(service)
+        return use.this;
+    }
+
+    use.plugin = function plugin(plugin: o.Plugin) {
+        if (!rootCtx) {
+            rootCtx = use.fork();
+            // Register the plugin under its generic and concrete types
+            rootCtx.set(o.Plugin, plugin);
+            rootCtx.set(plugin.constructor, plugin);
+            // ensure boot service loads and unloads with the (root) plugin
+            plugin.addChild(rootCtx.use(Bootloader));
+        } else if (plugin !== rootCtx.use(o.Plugin)) {
+            throw new TypeError("use.plugin() called on multiple plugins");
+        }
+        return rootCtx;
+    }
+    use.def(o.Plugin, () => { throw new Error("Plugin not created yet"); });
+    use.def(o.App, () => use(o.Plugin).app );
+    return use;
+})(_use)
 
 let rootCtx: Context;
 
@@ -25,25 +47,6 @@ declare module "to-use" {
 
 export class Service extends o.Component {
     use = use.service(this)
-}
-
-use.service = function service(service: o.Component) {
-    use(Bootloader).addChild(service)
-    return use.this;
-}
-
-use.plugin = function plugin(plugin: o.Plugin) {
-    if (!rootCtx) {
-        rootCtx = use.fork();
-        // Register the plugin under its generic and concrete types
-        rootCtx.set(o.Plugin, plugin);
-        rootCtx.set(plugin.constructor, plugin);
-        // ensure boot service loads and unloads with the (root) plugin
-        plugin.addChild(rootCtx.use(Bootloader));
-    } else if (plugin !== rootCtx.use(o.Plugin)) {
-        throw new TypeError("use.plugin() called on multiple plugins");
-    }
-    return rootCtx;
 }
 
 /** Service manager to ensure services load and unload with the plugin in an orderly manner */

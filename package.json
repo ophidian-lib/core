@@ -1,6 +1,6 @@
 {
   "name": "@ophidian/core",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "A Component framework for Obsidian Plugins",
   "keywords": [
     "obsidian"
@@ -13,7 +13,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "sideEffects": ["src/services.ts"],
+  "sideEffects": false,
   "dependencies": {
     "defaults": "^2.0.1",
     "i18next": "^20.3.2",
