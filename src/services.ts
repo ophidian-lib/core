@@ -2,15 +2,16 @@ import { obsidian as o } from "./obsidian";
 import { Context, Useful, use as _use } from "to-use";
 import { defer } from "./defer";
 export type * from "to-use";
+export var app: o.App;
 
 export const use = (use => {
     use.service = function service(service: o.Component) {
         use(Bootloader).addChild(service)
         return use.this;
     }
-
     use.plugin = function plugin(plugin: o.Plugin) {
         if (!rootCtx) {
+            app = plugin.app;
             rootCtx = use.fork();
             // Register the plugin under its generic and concrete types
             rootCtx.set(o.Plugin, plugin);
