@@ -1,4 +1,5 @@
 import { obsidian as o } from "../obsidian";
+import { SettingsService, useSettings } from "../plugin-settings";
 import { Useful, getContext, onLoad, use } from "../services";
 
 export interface SettingsProvider extends o.Component {
@@ -6,16 +7,22 @@ export interface SettingsProvider extends o.Component {
     hideSettings?(builder: SettingsTabBuilder): void
 }
 
-export function useSettingsTab(owner: SettingsProvider & Partial<Useful>) {
-    return getContext(owner)(SettingsTabBuilder).addProvider(owner);
+export function useSettingsTab<T>(owner: SettingsProvider & Partial<Useful>) {
+    return getContext(owner)(SettingsTabBuilder).addProvider(owner) as SettingsTabBuilder;
 }
 
-export class SettingsTabBuilder extends o.PluginSettingTab implements FieldParent {
+export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, FieldParent {
+
+    plugin = use(o.Plugin)
+    use = use.this;
 
     constructor() {
-        const plugin = use(o.Plugin);
-        super(app, plugin);
-        onLoad(plugin, () => plugin.addSettingTab(this));
+        super(app, use(o.Plugin));
+        var done = useSettings(this.plugin).onChange(() => {
+            onLoad(this.plugin, () => this.plugin.addSettingTab(this));
+            done();
+        })
+        this.plugin.register(done);
     }
 
     clear() { this.containerEl.empty(); return this; }
