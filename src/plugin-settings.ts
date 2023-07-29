@@ -40,18 +40,21 @@ import { computed, effect, signal } from "@preact/signals-core";
  *
  * @param owner            The service or plugin
  * @param defaultSettings  (Optional) The default settings to use
- * @param applySettings    (Optional) A function to call when settings are loaded or changed
+ * @param each             (Optional) A function to call with settings each time they're loaded or changed
+ * @param once             (Optional) A function to call with settings once, as soon as they're available
  *
  * @returns A {@link SettingsService} you can use to `.update()` the settings
  */
 export function useSettings<T>(
     owner: o.Component & Partial<Useful>,
     defaultSettings?: T,
-    applySettings?: (settings: T) => void
+    each?: (settings: T) => void,
+    once?: (settings: T) => void,
 ) {
     const svc = getContext(owner)(SettingsService) as SettingsService<T>;
     if (defaultSettings) svc.addDefaults(defaultSettings);
-    if (applySettings) owner.register(svc.onChange(applySettings));
+    if (once) owner.register(svc.once(once));
+    if (each) owner.register(svc.each(each));
     return svc;
 }
 
@@ -81,10 +84,20 @@ export class SettingsService<T extends {}> extends Service {
         }, console.error)
     }
 
-    onChange(callback: (settings: T) => any, ctx?: any): () => void {
+    once(callback: (settings: T) => any, ctx?: any): () => void {
+        const unsub =  this.each(data => { unsub(); callback.call(ctx, data); });
+        return unsub;
+    }
+
+    each(callback: (settings: T) => any, ctx?: any): () => void {
         return effect(() => {
             if (this.current) defer(callback.bind(ctx, this.current));
         });
+    }
+
+    /** @deprecated */
+    onChange(callback: (settings: T) => any, ctx?: any): () => void {
+        return this.each(callback, ctx);
     }
 
     update(op: (val:T) => T|void) {
@@ -103,6 +116,7 @@ export class SettingsService<T extends {}> extends Service {
             } catch(e) {
                 console.error(e);
             }
+            return this.data;
         });
     }
 }
