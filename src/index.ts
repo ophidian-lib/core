@@ -6,6 +6,7 @@ export * from "./layout";
 export * from "./localStorage";
 export * from "./plugin-settings";
 export * from "./services";
+export * from "./signify";
 export * from "./ui";
 
 // Expose Obsidian's i18n support (type declaration only)
