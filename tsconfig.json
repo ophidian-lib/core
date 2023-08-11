@@ -3,6 +3,7 @@
         "target": "es2018",
         "module": "ESNext",
         "experimentalDecorators": true,
+        "useDefineForClassFields": false,
         "newLine": "lf",
         "moduleResolution": "node",
         "lib": ["ES2018", "DOM"]
