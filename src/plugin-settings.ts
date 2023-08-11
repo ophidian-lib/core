@@ -33,7 +33,10 @@ import { computed, effect, signal } from "@preact/signals-core";
  *             this,   // plugin or other owner
  *             {...} as MySettings,  // default settings
  *             (settings: MySettings) => {
- *                 // code to init or update plugin state from settings
+ *                 // code that runs when settings are loaded or changed
+ *             },
+ *             (settings: MySettings) => {
+ *                 // code to do one-time setup only
  *             }
  *         )
  *     }
@@ -85,6 +88,7 @@ export class SettingsService<T extends {}> extends Service {
     }
 
     once(callback: (settings: T) => any, ctx?: any): () => void {
+        // each() will defer the callback, so it won't actually run before unsub is set
         const unsub =  this.each(data => { unsub(); callback.call(ctx, data); });
         return unsub;
     }
@@ -95,7 +99,7 @@ export class SettingsService<T extends {}> extends Service {
         });
     }
 
-    /** @deprecated */
+    /** @deprecated Use each() instead */
     onChange(callback: (settings: T) => any, ctx?: any): () => void {
         return this.each(callback, ctx);
     }

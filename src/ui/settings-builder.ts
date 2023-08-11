@@ -1,5 +1,5 @@
 import { obsidian as o } from "../obsidian";
-import { useSettings } from "../plugin-settings";
+import { SettingsService } from "../plugin-settings";
 import { Useful, getContext, onLoad, use } from "../services";
 
 export interface SettingsProvider extends o.Component {
@@ -18,9 +18,9 @@ export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, Fi
 
     constructor() {
         super(app, use(o.Plugin));
-        useSettings(this.plugin, null, null, () => {
+        this.plugin.register(use(SettingsService).once(() => {
             onLoad(this.plugin, () => this.plugin.addSettingTab(this));
-        })
+        }))
     }
 
     clear() { this.containerEl.empty(); return this; }
