@@ -1,3 +1,4 @@
+export * from "./add-ons";
 export * from "./clone-value";
 export * from "./defer";
 export * from "./deferred";

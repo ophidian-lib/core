@@ -11,9 +11,14 @@
 export function addOn<K extends Object,V>(creator: (key: K, map: WeakMap<K,V>) => V): (k: K) => V {
     var map = new WeakMap<K,V>();
     return (item: K) => {
-        if (map.has(item)) return map.get(item);
-        var res = creator(item, map);
-        map.set(item, res);
-        return res;
+        return map.has(item) ? map.get(item) : setMap(map, item, creator(item, map));
     }
+}
+
+/**
+ * Set a value in a map/weakmap and return the value
+ */
+export function setMap<K,V>(map: {set(key: K, val: V): void}, key: K, val: V) {
+    map.set(key as any, val);
+    return val;
 }
