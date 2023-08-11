@@ -30,7 +30,7 @@ export const use = (use => {
 
 let rootCtx: Context;
 
-export function getContext(parent: Partial<Useful>) {
+export function getContext(parent?: Partial<Useful>) {
     if (parent?.use) return parent.use;
     if (rootCtx) return rootCtx;
     if (parent instanceof o.Plugin) {
