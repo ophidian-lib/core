@@ -3,7 +3,7 @@ import { defer, taskQueue } from "./defer";
 import { obsidian as o } from "./obsidian";
 import { Service, Useful, getContext, onLoad } from "./services";
 import { cloneValue } from "./clone-value";
-import { computed, effect, signal } from "@preact/signals-core";
+import { computed, effect, signal } from "./signify";
 
 /**
  * ### Safe, simple, and centralized setting state management
@@ -66,9 +66,9 @@ export class SettingsService<T extends {}> extends Service {
     private queue = taskQueue();
     private data = {} as T;
     private version = signal(0);
-    private cloned = computed(() => this.version.value ? cloneValue(this.data) : null)
+    private cloned = computed(() => this.version() ? cloneValue(this.data) : null)
 
-    get current() { return this.cloned.value; }
+    get current() { return this.cloned(); }
 
     addDefaults(settings: T) {
         // We can do this without queueing, as it will not update existing values,
@@ -83,7 +83,7 @@ export class SettingsService<T extends {}> extends Service {
             this.data = <T> defaults(
                 (await this.plugin.loadData()) ?? {}, this.current
             )
-            this.version.value++;
+            this.version.set(this.version()+1);
         }, console.error)
     }
 
@@ -114,7 +114,7 @@ export class SettingsService<T extends {}> extends Service {
                 const newJSON = JSON.stringify(newData);
                 if (oldJSON !== newJSON) {
                     this.data = newData;
-                    this.version.value++;
+                    this.version.set(this.version()+1);
                     await this.plugin.saveData(JSON.parse(newJSON)).catch(console.error);
                 }
             } catch(e) {
