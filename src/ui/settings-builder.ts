@@ -3,8 +3,7 @@ import { SettingsService } from "../plugin-settings";
 import { Useful, getContext, onLoad, use } from "../services";
 
 export interface SettingsProvider extends o.Component {
-    showSettings?(builder: SettingsTabBuilder): void
-    hideSettings?(builder: SettingsTabBuilder): void
+    showSettings?(component: o.Component): void
 }
 
 export function useSettingsTab<T>(owner: SettingsProvider & Partial<Useful>) {
@@ -15,6 +14,8 @@ export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, Fi
 
     plugin = use(o.Plugin)
     use = use.this;
+
+    c: o.Component;
 
     constructor() {
         super(app, use(o.Plugin));
@@ -34,22 +35,17 @@ export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, Fi
 
     addProvider(provider: SettingsProvider) {
         if (provider.showSettings) {
-            this.onDisplay(() => provider._loaded && provider.showSettings(this));
-        }
-        if (provider.hideSettings) {
-            this.onHide(() => provider._loaded && provider.hideSettings(this));
+            this.onDisplay(c => provider._loaded && provider.showSettings(c));
         }
         return this;
     }
 
-    onDisplay(cb?: (s: SettingsTabBuilder) => any){ this.onDispCb = chain(this.onDispCb, cb); }
-    onHide(   cb?: (s: SettingsTabBuilder) => any){ this.onHideCb = chain(cb, this.onHideCb); }
+    onDisplay(cb?: (s: o.Component) => any){ this.onDispCb = chain(this.onDispCb, cb); }
 
-    protected onDispCb?: (s: SettingsTabBuilder) => any
-    protected onHideCb?: (s: SettingsTabBuilder) => any
+    protected onDispCb?: (s: o.Component) => any
 
-    display() { this.onDispCb?.(this); }
-    hide()    { if (this.onHideCb) this.onHideCb?.(this); else this.clear(); }
+    display() { this.c = new o.Component; this.c.load(); this.onDispCb?.(this.c); }
+    hide()    { this.c.unload(); this.clear(); }
 }
 
 interface FieldParent {
