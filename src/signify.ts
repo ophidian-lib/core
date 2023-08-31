@@ -33,14 +33,17 @@ var ticking = false, scheduled = false;
 
 function schedule(t: () => void) {
     batchedUpdates.push(t);
-    if (!ticking && !scheduled) defer(() => { scheduled = false; tick(); })
+    if (!ticking && !scheduled) {
+        defer(tick);
+        scheduled = true;
+    }
 }
 
 export function tick() {
     if (!ticking) {
         ticking = true;
         batch(() => { while(batchedUpdates.length) try { batchedUpdates.shift()(); } catch(e) { Promise.reject(e); } });
-        ticking = false;
+        scheduled = ticking = false;
     }
 }
 
