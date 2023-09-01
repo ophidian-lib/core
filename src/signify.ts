@@ -4,7 +4,7 @@
  */
 
 export { effect, untracked } from "@preact/signals-core";
-import { computed as _computed, batch, signal as _signal } from "@preact/signals-core";
+import { computed as _computed, batch, signal as _signal, Signal } from "@preact/signals-core";
 import { addOn } from "./add-ons";
 import { defer } from "./defer";
 
@@ -20,31 +20,24 @@ export function signal<T>(val?: T) {
     const s = _signal(val);
     function signal() { s.value; return val; }
     (signal as Writable<T>).set = function(v: T) {
-        val = v; // cache update for immediate read
-        schedule(() => s.value = val);  // schedule atomic update to run effects
+        if (val === v) return;  // ignore no-op sets
+        if (!toUpdate.size) defer(tick); // schedule atomic update to run effects
+        toUpdate.set(s, val = v); // cache update for immediate read
     }
     return signal as Writable<T>
 }
 
 // Asynchronous updates
-const batchedUpdates = [] as Array<() => void>;
-
-var ticking = false, scheduled = false;
-
-function schedule(t: () => void) {
-    batchedUpdates.push(t);
-    if (!ticking && !scheduled) {
-        defer(tick);
-        scheduled = true;
-    }
-}
+const toUpdate = new Map<Signal<any>, any>();
 
 export function tick() {
-    if (!ticking) {
-        ticking = true;
-        batch(() => { while(batchedUpdates.length) try { batchedUpdates.shift()(); } catch(e) { Promise.reject(e); } });
-        scheduled = ticking = false;
-    }
+    if (!toUpdate.size) return;
+    batch(() => {
+        for (const [s, v] of toUpdate.entries()) {
+            toUpdate.delete(s);
+            s.value = v;
+        }
+    });
 }
 
 
