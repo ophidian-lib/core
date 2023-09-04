@@ -3,6 +3,7 @@ export * from "./clone-value";
 export * from "./defer";
 export * from "./deferred";
 export * from "./dom";
+export * from "./indexing";
 export * from "./layout";
 export * from "./localStorage";
 export * from "./plugin-settings";
