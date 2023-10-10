@@ -84,7 +84,7 @@ export class SettingsService<T extends {}> extends Service {
                 (await this.plugin.loadData()) ?? {}, this.current
             )
             this.version.set(this.version()+1);
-        }, console.error)
+        })
     }
 
     once(callback: (settings: T) => any, ctx?: any): () => void {

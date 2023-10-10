@@ -4,17 +4,18 @@ export const defer: (cb: () => any) => void = typeof queueMicrotask === "functio
 /**
  * Return a queuing function that invokes callbacks serially, returning a promise for the task's completion
  *
- * The returned function has a signature that's equivalent to Promise<void>.then() - i.e., it takes an
- * optional onfulfilled and onrejected callback.  If no onrejected callback is supplied, `console.error`
- * is used.
+ * The returned function takes a zero-argument callback which can return a value or an error, and returns
+ * a promise for the result of that callback.  The callback will not be run until after all previous callbacks
+ * have run.  If no callback is supplied to the queue, the promise returned is for the most-recently-executed
+ * callback.
  */
-export function taskQueue<T>(initalValue?: T) {
-    let last = Promise.resolve(initalValue) as Promise<T>;
-    return (onfulfilled?: (val: T) => T|PromiseLike<T>, onrejected?: (reason: any) => T|PromiseLike<T>) => {
-        if (onfulfilled || onrejected) {
-            if (typeof onrejected === "undefined") onrejected = console.error as typeof onrejected;
-            return last = last.then(onfulfilled, onrejected);
-        }
-        return last;
+export function taskQueue() {
+    let last: Promise<any> = Promise.resolve();
+    return <T>(action?: () => T|PromiseLike<T>) => {
+        return !action ? last : last = new Promise<T>(
+            (res, rej) => last.finally(
+                () => { try { res(action()); } catch(e) { rej(e); } }
+            )
+        )
     }
 }
