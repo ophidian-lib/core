@@ -39,6 +39,10 @@ export function getContext(parent?: Partial<Useful>) {
     throw new Error("No context available: did you forget to `use.plugin()`?");
 }
 
+export function the<T>(key: o.Constructor<T>, parent?: Partial<Useful>): T {
+    return getContext(parent)(key) as T;
+}
+
 declare module "to-use" {
     interface GlobalContext {
         service(service: o.Component): Context
