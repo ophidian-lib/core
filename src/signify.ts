@@ -4,7 +4,7 @@
  */
 
 export { untracked } from "@preact/signals-core";
-import { computed as _computed, batch, signal as _signal, effect as _effect, Signal } from "@preact/signals-core";
+import { computed as _computed, batch, signal as _signal, effect as _effect, Signal, untracked } from "@preact/signals-core";
 import { addOn } from "./add-ons";
 import { defer } from "./defer";
 
@@ -110,7 +110,7 @@ export function when(cond: () => any, bind?: any) {
     return function (fn?: () => unknown|(() => unknown)) {
         if (arguments.length) {
             if (bind) fn = fn.bind(bind);
-            fns.set([...fns(), fn]);
+            fns.set([...untracked(fns), fn]);
             return function() { fns.set(fns().filter(f => f !== fn)); }
         } else {
             stop?.();
