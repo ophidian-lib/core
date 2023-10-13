@@ -67,6 +67,14 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
     }};
 }
 
+export function rule(_clsOrProto: object, _name: string, desc: {value?: () => unknown | (() => unknown)}): any {
+    const method = desc.value;
+    return {...desc, value() {
+        if (childEffects) return effect(method.bind(this));
+        throw new Error("Must be called from within another rule or effect");
+    }}
+}
+
 // Support nested effects
 
 var childEffects: Array<() => unknown>
@@ -92,29 +100,24 @@ export function effect(compute: () => unknown | (() => unknown)): () => void {
 }
 
 /**
- * Create a group of effects tied to a condition.
+ * Create an effect tied to a boolean condition
  *
- * @param cond A function whose return value indicates whether
- * the effects should be enabled.
+ * This is similar to writing `effect(() => { if (condition()) return action(); })`,
+ * except that the the action will not be rerun (or any compensators triggered)
+ * if a value that's *part* of the condition changes (as opposed to the boolean
+ * result of the condition).  This can be important for rules that nest other rules,
+ * have compensators, fire off tasks, etc., as it may be wasteful to constantly
+ * tear them down and set them back up if the condition itself remains stable.
  *
- * @param bind Optional: an object to bind effect callbacks to
+ * @param condition A function whose return value indicates whether
+ * the action should be run.
  *
- * @returns A function that can be called with an effect callback to
- * add it to the group (returning a remove function for removing it
- * from the group), or with no arguments to dispose of the entire group.
+ * @param action An effect callback
+ *
+ * @returns a disposal callback for the created effect
+ *
  */
-export function when(cond: () => any, bind?: any) {
-    var fns = signal([] as Array<() => unknown|(() => unknown)>);
-    var active = computed(() => !!cond());
-    var stop = effect(() => { if (active()) fns().forEach(effect); });
-    return function (fn?: () => unknown|(() => unknown)) {
-        if (arguments.length) {
-            if (bind) fn = fn.bind(bind);
-            fns.set([...untracked(fns), fn]);
-            return function() { fns.set(fns().filter(f => f !== fn)); }
-        } else {
-            stop?.();
-            fns = stop = bind = cond = undefined;
-        }
-    }
+export function when(condition: () => any, action: () => unknown | (() => unknown)) {
+    var active = computed(() => !!condition());
+    return effect(() => active() ? action() : undefined);
 }
