@@ -206,7 +206,8 @@ declare module "obsidian" {
         serialize(): any;
     }
     interface Workspace {
-        setLayout(layout: any): void;
+        setLayout(layout: any): Promise<void>;
+        clearLayout(): Promise<void>;
         deserializeLayout(state: any, ...etc: any[]): Promise<WorkspaceItem>;
     }
 }
