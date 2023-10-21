@@ -1,4 +1,5 @@
 export * from "./add-ons";
+export * from "./cleanups";
 export * from "./clone-value";
 export * from "./defer";
 export * from "./deferred";

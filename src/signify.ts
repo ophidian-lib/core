@@ -7,6 +7,7 @@ export { untracked } from "@preact/signals-core";
 import { computed as _computed, batch, signal as _signal, effect as _effect, Signal, untracked } from "@preact/signals-core";
 import { addOn } from "./add-ons";
 import { defer } from "./defer";
+import { OptionalCleanup, canCleanup, cleanup, withCleanup } from "./cleanups";
 
 export interface Value<T> { (): T; }
 export interface Writable<T> extends Value<T> { set(v: T): void; }
@@ -67,35 +68,60 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
     }};
 }
 
+/**
+ * Decorator to make a method into a child effect
+ *
+ * This is equivalent to wrapping the method body with `return effect(() => {...}, false);`,
+ * which means the method can only be called from within a running `effect()`, `@rule`, or
+ * `withCleanup()`.
+ */
 export function rule(_clsOrProto: object, _name: string, desc: {value?: () => unknown | (() => unknown)}): any {
     const method = desc.value;
-    return {...desc, value() {
-        if (childEffects) return effect(method.bind(this));
-        throw new Error("Must be called from within another rule or effect");
-    }}
+    return {...desc, value() { return effect(method.bind(this), false);}}
 }
 
-// Support nested effects
+/**
+ * Decorator to make a method perform an action without creating dependencies for
+ * any currently-running effects
+ *
+ * This is shorthand for wrapping the method body in `return untracked(() => {...})`.
+ */
+export function action(_clsOrProto: object, _name: string, desc: {value?: (...args: any[]) => any}): any {
+    const method = desc.value;
+    return {...desc, value(...args) { return untracked(method.bind(this, ...args)); }};
+}
 
-var childEffects: Array<() => unknown>
-
-export function effect(compute: () => unknown | (() => unknown)): () => void {
-    const cb = _effect(function() {
-        const old = childEffects;
-        const fx = childEffects = [];
-        try {
-            const cb = compute.call(this);
-            if (cb) fx.push(cb);
-            if (fx.length) {
-                return fx.length === 1 ? fx.pop() : function() {
-                    while (fx.length) try { fx.shift()(); } catch (e) { Promise.reject(e); }
-                }
-            }
-        } finally {
-            childEffects = old;
-        }
-    });
-    if (childEffects) childEffects.push(cb);
+/**
+ * Register a callback that will run repeatedly in response to changes
+ *
+ * @param action The function to run: it will be invoked once immediately
+ * (before `effect()` returns), and then re-run each time any of the signals it
+ * used (in its previous run) change.  It can optionally return a "cleanup"
+ * function that will be run before the next invocation of the compute function,
+ * or when the effect is stopped.  (It can also use the `cleanup()` API to
+ * register multiple cleanups, and any nested `effect()` calls will be added to
+ * the cleanup list as well.)
+ *
+ * @param standalone If set to `true`, the effect will not be made a child of
+ * any currently-running effect, which means you must call the returned "stop"
+ * callback to explicitly stop the effect.  If set to `false`, the effect is
+ * explicitly intended as a child effect, and so there *must* be a currently-
+ * running effect (or `withCleanup()` block), or else an error will be thrown.
+ * Any value other than true (or omitting it) means the effect can be used
+ * either standalone, or inside another `effect()` or `withCleanup()` block.
+ *
+ * @returns A callback to stop the effect from re-running.  You do not need to
+ * invoke it for effects that are started by another (running) effect, as they
+ * will automatically be cleaned up when the parent effect is re-run or
+ * canceled.
+ */
+export function effect(action: () => OptionalCleanup, standalone?: boolean): () => void {
+    const haveContext = canCleanup();
+    if (standalone === false && !haveContext) throw new Error(
+        "Must be called from within another effect or @rule"
+    );
+    const cb = _effect(() => withCleanup(action, true));
+    if (haveContext && standalone !== true) cleanup(cb);
     return cb;
 }
 
@@ -103,10 +129,10 @@ export function effect(compute: () => unknown | (() => unknown)): () => void {
  * Create an effect tied to a boolean condition
  *
  * This is similar to writing `effect(() => { if (condition()) return action(); })`,
- * except that the the action will not be rerun (or any compensators triggered)
+ * except that the the action will not be rerun (or any cleanup functions triggered)
  * if a value that's *part* of the condition changes (as opposed to the boolean
  * result of the condition).  This can be important for rules that nest other rules,
- * have compensators, fire off tasks, etc., as it may be wasteful to constantly
+ * have cleanups, fire off tasks, etc., as it may be wasteful to constantly
  * tear them down and set them back up if the condition itself remains stable.
  *
  * @param condition A function whose return value indicates whether
@@ -114,10 +140,12 @@ export function effect(compute: () => unknown | (() => unknown)): () => void {
  *
  * @param action An effect callback
  *
+ * @param standalone Same as the standalone parameter of {@link effect}
+ *
  * @returns a disposal callback for the created effect
  *
  */
-export function when(condition: () => any, action: () => unknown | (() => unknown)) {
+export function when(condition: () => any, action: () => OptionalCleanup, standalone?: boolean) {
     var active = computed(() => !!condition());
-    return effect(() => active() ? action() : undefined);
+    return effect(() => active() ? action() : undefined, standalone);
 }
