@@ -21,6 +21,17 @@ export class Dialog extends o.Modal {
         this.containerEl.addClass("ophidian-dialog");
     }
 
+    isOpened = false;
+    open() {
+        if (!this.isOpened) super.open();
+        this.isOpened = true;
+    }
+
+    close(): void {
+        if (this.isOpened) super.close();
+        this.isOpened = false;
+    }
+
     setOk(text: string) {
         this.okButton.textContent = text;
     }
