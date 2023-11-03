@@ -1,5 +1,5 @@
 import { obsidian as o } from "./obsidian";
-import { Context, Useful, use as _use } from "to-use";
+import { Context, Useful, Key, Provides, use as _use } from "to-use";
 import { defer } from "./defer";
 export type * from "to-use";
 export var app: o.App;
@@ -39,8 +39,8 @@ export function getContext(parent?: Partial<Useful>) {
     throw new Error("No context available: did you forget to `use.plugin()`?");
 }
 
-export function the<T>(key: o.Constructor<T>, parent?: Partial<Useful>): T {
-    return getContext(parent)(key) as T;
+export function the<K extends Key>(key: K, parent?: Partial<Useful>): Provides<K> {
+    return getContext(parent)(key);
 }
 
 declare module "to-use" {
