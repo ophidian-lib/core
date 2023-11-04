@@ -1,8 +1,9 @@
 import { obsidian as o } from "../obsidian";
-import "./dialog.scss";
+import dialogStyle from "scss:./dialog.scss";
 
 export class Dialog extends o.Modal {
     buttonContainerEl = this.modalEl.createDiv("modal-button-container");
+    styleEl = this.modalEl.createEl("style", {text: dialogStyle});
     textContentEl = this.contentEl.createDiv("dialog-text");
     okButton = this.buttonContainerEl.createEl(
         "button", {cls: "mod-cta", text:i18next.t("dialogue.button-continue")}, b => {
