@@ -8,6 +8,7 @@ export * from "./indexing";
 export * from "./layout";
 export * from "./localStorage";
 export * from "./plugin-settings";
+export * from "./resources";
 export * from "./services";
 export * from "./signify";
 export * from "./ui";
