@@ -66,9 +66,9 @@ export class SettingsService<T extends {}> extends Service {
     private queue = taskQueue();
     private data = {} as T;
     private version = signal(0);
-    private cloned = computed(() => this.version() ? cloneValue(this.data) : null)
+    get = computed(() => this.version() ? cloneValue(this.data) : null)
 
-    get current() { return this.cloned(); }
+    get current() { return this.get(); }
 
     addDefaults(settings: T) {
         // We can do this without queueing, as it will not update existing values,
@@ -81,7 +81,7 @@ export class SettingsService<T extends {}> extends Service {
         this.queue(async () => {
             await new Promise(res => onLoad(this.plugin, res as () => any));
             this.data = <T> defaults(
-                (await this.plugin.loadData()) ?? {}, this.current
+                (await this.plugin.loadData()) ?? {}, this.data
             )
             this.version.set(this.version()+1);
         })
