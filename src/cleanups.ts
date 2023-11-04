@@ -92,7 +92,7 @@ export interface Job<T> extends PromiseLike<T> {
     cleanup(f: Cleanup): void;
 }
 
-const IS_RUNNING = 1, IS_FINISHED = 2, IS_ERROR = 4 | IS_FINISHED;
+const IS_RUNNING = 1, IS_FINISHED = 2, IS_ERROR = 4 | IS_FINISHED, WAS_PROMISED = 8;
 
 class _Job<T> implements Job<T> {
     constructor(protected g: JobGenerator<T>) {
@@ -107,6 +107,11 @@ class _Job<T> implements Job<T> {
         this._ctx.push(() => {
             const idx = parentCtx.indexOf(doStop);
             if (idx >= 0) parentCtx.splice(idx, 1);
+
+            // Check for untrapped error, promote to unhandled rejection
+            if ((this._flags & (IS_ERROR | WAS_PROMISED)) === IS_ERROR) {
+                Promise.reject(this._result);
+            }
         })
 
         // Start asynchronously
@@ -117,9 +122,14 @@ class _Job<T> implements Job<T> {
         onfulfilled?: (value: T) => T1 | PromiseLike<T1>,
         onrejected?: (reason: any) => T2 | PromiseLike<T2>
     ): Promise<T1 | T2> {
+        this._flags |= WAS_PROMISED;
         return new Promise((res, rej) => this.cleanup(() => {
             if ((this._flags & IS_ERROR) === IS_ERROR) rej(this._result); else res(this._result);
         })).then(onfulfilled, onrejected);
+    }
+
+    catch<T>(onrejected?: (reason: any) => T | PromiseLike<T>): Promise<T> {
+        return this.then(undefined, onrejected);
     }
 
     next(v?: any)   { if (this.g) this._step("next",   v); }

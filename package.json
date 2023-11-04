@@ -20,7 +20,8 @@
     "i18next": "^20.3.2",
     "monkey-around": "^2.3",
     "obsidian": "1.2.8",
-    "to-use": "^0.3.3"
+    "to-use": "^0.3.3",
+    "wonka": "^6.3.4"
   },
   "devDependencies": {
     "@types/node": "16"

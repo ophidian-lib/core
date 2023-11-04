@@ -8,6 +8,7 @@ specifiers:
   monkey-around: ^2.3
   obsidian: 1.2.8
   to-use: ^0.3.3
+  wonka: ^6.3.4
 
 dependencies:
   '@preact/signals-core': 1.4.0
@@ -16,6 +17,7 @@ dependencies:
   monkey-around: 2.3.0
   obsidian: 1.2.8
   to-use: 0.3.3
+  wonka: 6.3.4
 
 devDependencies:
   '@types/node': 16.18.38
@@ -88,4 +90,8 @@ packages:
 
   /to-use/0.3.3:
     resolution: {integrity: sha512-i5hrYhcDyrjl4tF2EvZnmL8VAMdMYnMFeX1bIF0ekn2gKgs76UhZcHt+hLIUKh0fIii+Ix6uUp5W6yYlU5+Z8A==}
+    dev: false
+
+  /wonka/6.3.4:
+    resolution: {integrity: sha512-CjpbqNtBGNAeyNS/9W6q3kSkKE52+FjIj7AkFlLr11s/VWGUu6a2CdYSdGxocIhIVjaW/zchesBQUKPVU69Cqg==}
     dev: false

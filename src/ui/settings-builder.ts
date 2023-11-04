@@ -1,7 +1,7 @@
 import { obsidian as o } from "../obsidian";
 import { SettingsService } from "../plugin-settings";
 import { Useful, getContext, onLoad, use } from "../services";
-import { signal, untracked, when } from "../signify";
+import { signal, untracked, whenTrue } from "../signify";
 
 export interface SettingsProvider extends o.Component {
     showSettings?(component: o.Component): void
@@ -24,7 +24,7 @@ export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, Fi
         this.plugin.register(use(SettingsService).once(() => {
             onLoad(this.plugin, () => this.plugin.addSettingTab(this));
         }))
-        this.plugin.register(when(this.isOpen, () => {
+        this.plugin.register(whenTrue(this.isOpen, () => {
             const c = new o.Component;
             c.load();
             untracked(() => { this.providers.forEach(p => p._loaded && p.showSettings(c)); });

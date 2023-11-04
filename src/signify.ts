@@ -145,7 +145,7 @@ export function effect(action: () => OptionalCleanup, standalone?: boolean): () 
  * @returns a disposal callback for the created effect
  *
  */
-export function when(condition: () => any, action: () => OptionalCleanup, standalone?: boolean) {
+export function whenTrue(condition: () => any, action: () => OptionalCleanup, standalone?: boolean) {
     var active = computed(() => !!condition());
     return effect(() => active() ? action() : undefined, standalone);
 }

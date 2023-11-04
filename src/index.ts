@@ -4,6 +4,7 @@ export * from "./clone-value";
 export * from "./defer";
 export * from "./deferred";
 export * from "./dom";
+export * from "./eventful";
 export * from "./indexing";
 export * from "./layout";
 export * from "./localStorage";
