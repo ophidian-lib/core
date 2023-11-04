@@ -1,6 +1,7 @@
 import { obsidian as o } from "../obsidian";
 import { SettingsService } from "../plugin-settings";
 import { Useful, getContext, onLoad, use } from "../services";
+import { signal, untracked, when } from "../signify";
 
 export interface SettingsProvider extends o.Component {
     showSettings?(component: o.Component): void
@@ -15,13 +16,20 @@ export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, Fi
     plugin = use(o.Plugin)
     use = use.this;
 
-    c: o.Component;
+    isOpen = signal(false);
+    providers: SettingsProvider[] = []
 
     constructor() {
         super(app, use(o.Plugin));
         this.plugin.register(use(SettingsService).once(() => {
             onLoad(this.plugin, () => this.plugin.addSettingTab(this));
         }))
+        this.plugin.register(when(this.isOpen, () => {
+            const c = new o.Component;
+            c.load();
+            untracked(() => { this.providers.forEach(p => p._loaded && p.showSettings(c)); });
+            return () => { c.unload(); this.clear(); }
+        }));
     }
 
     clear() { this.containerEl.empty(); return this; }
@@ -34,18 +42,12 @@ export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, Fi
     }
 
     addProvider(provider: SettingsProvider) {
-        if (provider.showSettings) {
-            this.onDisplay(c => provider._loaded && provider.showSettings(c));
-        }
+        if (provider.showSettings) this.providers.push(provider);
         return this;
     }
 
-    onDisplay(cb?: (s: o.Component) => any){ this.onDispCb = chain(this.onDispCb, cb); }
-
-    protected onDispCb?: (s: o.Component) => any
-
-    display() { this.c = new o.Component; this.c.load(); this.onDispCb?.(this.c); }
-    hide()    { this.c.unload(); this.clear(); }
+    display() { this.isOpen.set(true); }
+    hide()    { this.isOpen.set(false); }
 }
 
 interface FieldParent {
@@ -63,10 +65,4 @@ export class FieldBuilder<T extends FieldParent> extends o.Setting {
     field(parentEl?: HTMLElement): FieldBuilder<T> {
         return this.builder.field(parentEl)
     }
-}
-
-function chain<T>(f1: (v: T) => any, f2: (v: T) => any): (v: T) => void {
-    if (!f1) return f2;
-    if (!f2) return f1;
-    return v => { f1?.(v); f2?.(v); };
 }
