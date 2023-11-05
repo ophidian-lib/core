@@ -1,7 +1,9 @@
+import { OptionalCleanup, cleanup } from "../cleanups";
+import { when } from "../eventful";
 import { obsidian as o } from "../obsidian";
 import { SettingsService } from "../plugin-settings";
 import { Useful, getContext, onLoad, use } from "../services";
-import { signal, untracked, whenTrue } from "../signify";
+import { signal } from "../signify";
 
 export interface SettingsProvider extends o.Component {
     showSettings?(component: o.Component): void
@@ -24,10 +26,10 @@ export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, Fi
         this.plugin.register(use(SettingsService).once(() => {
             onLoad(this.plugin, () => this.plugin.addSettingTab(this));
         }))
-        this.plugin.register(whenTrue(this.isOpen, () => {
+        this.plugin.register(when(this.isOpen, () => {
             const c = new o.Component;
             c.load();
-            untracked(() => { this.providers.forEach(p => p._loaded && p.showSettings(c)); });
+            withParent(this.containerEl, () => { this.providers.forEach(p => p._loaded && p.showSettings(c)); });
             return () => { c.unload(); this.clear(); }
         }));
     }
@@ -64,5 +66,18 @@ export class FieldBuilder<T extends FieldParent> extends o.Setting {
     }
     field(parentEl?: HTMLElement): FieldBuilder<T> {
         return this.builder.field(parentEl)
+    }
+}
+
+export var parentElement: HTMLElement;
+
+export function withParent(el: HTMLElement, cb?: () => OptionalCleanup) {
+    const old = parentElement;
+    try {
+        parentElement = el;
+        const r = cb?.();
+        if (typeof r === "function") cleanup(r);
+    } finally {
+        parentElement = old;
     }
 }

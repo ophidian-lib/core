@@ -1,0 +1,17 @@
+details.ophidian-settings-group > div { margin-left: var(--font-ui-medium); }
+
+summary.ophidian-settings-group {
+    display: flex;
+    & > div.setting-item-heading:first-child {
+        width: 100%;
+        .setting-item-description { margin-left: var(--font-ui-medium); }
+        details.ophidian-settings-group > & .setting-item-name::before {
+            content: "▸";
+            display: inline-flex;
+            width: var(--font-ui-medium);
+        }
+        details.ophidian-settings-group[open] > & .setting-item-name::before {
+            content: "▾";
+        }
+    }
+}
