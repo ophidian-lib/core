@@ -5,14 +5,14 @@ type Nothing = undefined | null | void;
 export type Cleanup = () => unknown;
 export type OptionalCleanup = Cleanup | Nothing;
 
-type CleanupContext = Cleanup[]
+type CleanupContext = OptionalCleanup[]
 var cleanupContext: CleanupContext;
 
 /** Return true if a withCleanup() call is active */
 export function canCleanup() { return !!cleanupContext; }
 
 /** Register cleanup function(s) for the enclosing effect, @rule, job, or withCleanup */
-export function cleanup(...cleanups: Array<() => any>) {
+export function cleanup(...cleanups: OptionalCleanup[]) {
     if (cleanupContext) cleanupContext.push(...cleanups); else throw new Error(
         "cleanup() must be called from within a job, effect, @rule, or withCleanup"
     );
@@ -50,7 +50,7 @@ export function withCleanup(action: () => OptionalCleanup, optional?: boolean): 
 }
 
 function runCleanups(this: CleanupContext) {
-    while (this.length) try { this.pop()(); } catch (e) { Promise.reject(e); }
+    while (this.length) try { (this.pop() as Cleanup)?.(); } catch (e) { Promise.reject(e); }
 }
 
 var currentJob: Job<any>;
