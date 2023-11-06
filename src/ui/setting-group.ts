@@ -1,79 +1,52 @@
-import { OptionalCleanup, cleanup } from "../cleanups";
 import { LocalObject } from "../localStorage";
 import { obsidian as o } from "../obsidian";
 import { Service, the } from "../services";
 import { computed, effect, signal } from "../signify";
-import { parentElement, withParent } from "./settings-builder";
+import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder";
 import groupStyle from "scss:./setting-group.scss";
 
-export function field(cb?: (s: o.Setting) => OptionalCleanup) {
-    return new GroupField(parentElement)["then"](s => {
-        if (cb) {
-            const r = cb(s);
-            if (typeof r === "function") cleanup(r);
-        }
-    });
+export function group<T extends FieldParent=SettingsTabBuilder>(owner?: T) {
+    return new SettingGroup(owner || useSettingsTab());
 }
 
-export function group(cb?: (g: SettingGroup) => OptionalCleanup) {
-    return new SettingGroup(parentElement).build(cb);
-}
+class SettingGroup<T extends FieldParent> extends o.Setting implements FieldParent {
 
-export class GroupField extends o.Setting {
-    constructor(public parentEl: HTMLElement, public parentGroup?: SettingGroup) {
-        super(parentEl);
-    }
+    readonly detailsEl: HTMLDetailsElement;
 
-    protected owner = this.parentGroup;
-
-    end() { return this.parentGroup; }
-
-    build(cb?: (g: this) => OptionalCleanup) {
-        if (cb) withParent(this.parentEl, cb.bind(null, this));
-        return this;
-    }
-
-    field(cb?: (s: GroupField) => OptionalCleanup) {
-        return new GroupField(this.parentEl, this.owner).build(cb);
-    }
-
-    group(cb?: (g: SettingGroup) => OptionalCleanup) {
-        return new SettingGroup(this.parentEl, this.owner).build(cb);
-    }
-}
-
-export class SettingGroup extends GroupField {
-    owner = this;
-    detailsEl: HTMLDetailsElement;
-
-    constructor(public containerEl: HTMLElement, parentGroup?: SettingGroup) {
+    constructor(readonly parent?: T, public containerEl: HTMLElement = (<FieldParent>parent || useSettingsTab()).containerEl) {
         const detailsEl = containerEl.createEl("details", "ophidian-settings-group");
         const summaryEl = detailsEl.createEl("summary", "ophidian-settings-group");
-        super(summaryEl, parentGroup);
+        super(summaryEl);
         this.setHeading();
-        this.parentEl = (this.detailsEl = detailsEl).createDiv();
-        if (!parentGroup && !containerEl.parentElement.matchParent("details.ophidian-settings-group")) {
+        this.containerEl = (this.detailsEl = detailsEl).createDiv();
+        if (!containerEl.parentElement.matchParent("details.ophidian-settings-group")) {
             detailsEl.createEl("style", {text: groupStyle});
         }
         // prevent closing group on click
         this.controlEl.addEventListener("click", e => e.preventDefault());
     }
 
-    empty() { this.parentEl.empty(); }
+    with(...features: Feature<this>[]) { return applyFeatures(this, ...features); }
+    field(): FieldBuilder<this> { return new FieldBuilder(this); }
+    group(): SettingGroup<this> { return new SettingGroup(this); }
+    end() { return this.parent; }
+
+    empty() { this.containerEl.empty(); return this; }
 
     open(open=true) { this.detailsEl.open = open; return this; }
+}
 
-    keepState(id: string, open: boolean) {
-        const details = this.detailsEl, state = the(GroupState);
+export function trackOpen(id: string, open=false) {
+    return <T extends FieldParent>(g: SettingGroup<T>) => {
+        const details = g.detailsEl, state = the(SettingGroupState);
         effect(() => { details.open = state.get(id, open); });
         details.addEventListener("toggle", () => state.set(id, details.open));
-        return this;
     }
 }
 
 type GroupToggles = Record<string,boolean>;
 
-export class GroupState extends Service {
+export class SettingGroupState extends Service {
     storage: LocalObject<GroupToggles> = new LocalObject(
         `${app.appId}-${this.use(o.Plugin).manifest.id}:setting-group-toggles`, {} as GroupToggles, v => this.data.set(v)
     );
