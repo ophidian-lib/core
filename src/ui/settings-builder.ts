@@ -18,8 +18,9 @@ export function settingsBuilder(containerEl: HTMLElement = useSettingsTab().cont
         with(...features: Feature<FieldParent>[]) { return applyFeatures(this, ...features); },
     };
 }
-
-export function field<T extends FieldParent=SettingsTabBuilder>(owner?: T) {
+export function field(): FieldBuilder<SettingsTabBuilder>;
+export function field<T extends FieldParent>(owner: T): FieldBuilder<T>;
+export function field(owner?: FieldParent) {
     return new FieldBuilder(owner || useSettingsTab());
 }
 

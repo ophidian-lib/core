@@ -5,7 +5,9 @@ import { computed, effect, signal } from "../signify";
 import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder";
 import groupStyle from "scss:./setting-group.scss";
 
-export function group<T extends FieldParent=SettingsTabBuilder>(owner?: T) {
+export function group(): SettingGroup<SettingsTabBuilder>
+export function group<T extends FieldParent>(owner: T): SettingGroup<T>
+export function group(owner?: FieldParent) {
     return new SettingGroup(owner || useSettingsTab());
 }
 
