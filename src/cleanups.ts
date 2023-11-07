@@ -231,7 +231,7 @@ export function spawn<T,R>(thisArg: T, gf: (this: T) => JobGenerator<R>): Job<R>
     return job(gf.call(thisArg) as JobGenerator<R>);
 }
 
-export interface Job<T> extends PromiseLike<T> {
+export interface Job<T> extends Promise<T> {
     next(v?: any): void;
     return(v?: T): void;
     throw(e: any): void;
@@ -243,6 +243,10 @@ export interface Job<T> extends PromiseLike<T> {
 const IS_RUNNING = 1, IS_FINISHED = 2, IS_ERROR = 4 | IS_FINISHED, WAS_PROMISED = 8;
 
 class _Job<T> implements Job<T> {
+
+    // pretend to be a promise
+    declare [Symbol.toStringTag]: string;
+
     constructor(protected g: JobGenerator<T>) {
         this.savepoint.add(() => {
             // Check for untrapped error, promote to unhandled rejection
@@ -264,9 +268,11 @@ class _Job<T> implements Job<T> {
         })).then(onfulfilled, onrejected);
     }
 
-    catch<T>(onrejected?: (reason: any) => T | PromiseLike<T>): Promise<T> {
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
         return this.then(undefined, onrejected);
     }
+
+    finally(onfinally?: () => void): Promise<T> { return this.then().finally(onfinally); }
 
     next(v?: any)   { if (this.g) this._step("next",   v); }
     return(v?: T)   { if (this.g) this._step("return", v); }
