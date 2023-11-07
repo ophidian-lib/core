@@ -4,53 +4,201 @@ import { defer } from "./defer";
 type Nothing = undefined | null | void;
 export type Cleanup = () => unknown;
 export type OptionalCleanup = Cleanup | Nothing;
-
-type CleanupContext = OptionalCleanup[]
-var cleanupContext: CleanupContext;
-
-/** Return true if a withCleanup() call is active */
-export function canCleanup() { return !!cleanupContext; }
-
-/** Register cleanup function(s) for the enclosing effect, @rule, job, or withCleanup */
-export function cleanup(...cleanups: OptionalCleanup[]) {
-    if (cleanupContext) cleanupContext.push(...cleanups); else throw new Error(
-        "cleanup() must be called from within a job, effect, @rule, or withCleanup"
-    );
-}
+type PlainFunction = (this: null, ...args: any[]) => any;
 
 /**
- * Aggregate cleanup functions registered during a function's execution
+ * A savepoint is a way to clean up a collection of related resources
+ * or undo actions taken by rules, effects, or jobs.  By adding
+ * "cleanups" -- zero-argument callbacks -- to a savepoint, you can
+ * later call its `rollback()` method to run all of them in reverse
+ * order, thereby undoing actions or disposing of used resources.
  *
- * @param action The function to run.  While running, any cleanup(), effect(), or @rule cleanups
- * will be added to a list.  If the action throws an error, cleanups registered up to that point
- * are called before the error propagates.
- * @returns A function that can be called to execute all registered cleanup functions, in reverse
- * order.  Any errors raised in cleanup functions are converted to promise rejections.
- * @param optional Pass true to get an undefined result if no cleanups were registered during
- * the action.  (Otherwise, a no-op function is returned if no cleanups were registered.)
+ * The `savepoint` export lets you create `new savepoint()` instances,
+ * and perform operations on the "current" savepoint, if there is one.
+ * e.g. `savepoint.add(callback)` will add `callback` to the active
+ * savepoint, or throw an error if there is none.  (You can use
+ * `savepoint.active` to check if there is a currently active
+ * savepoint, or make one active using its `.run()` method.)
  */
+interface savepoint extends ActiveSavePoint {
+    /** Is there a currently active savepoint? */
+    readonly active: boolean;
+
+    /**
+     * Create a savepoint, optionally capturing cleanup callbacks from a
+     * supplied function.
+     *
+     * If a function is supplied, it will be run with the new savepoint active
+     * (so that `savepoint.add()` and the like will work).  If the function
+     * returns a function, it will be added to the new savepoint's cleanup
+     * callbacks.  If the function throws an error, the savepoint will be rolled
+     * back, and the error re-thrown.
+     */
+    new(action?: () => OptionalCleanup): SavePoint;
+}
+
+export interface ActiveSavePoint {
+    /**
+     * Add zero or more cleanup callbacks to be run when the savepoint is rolled
+     * back. Non-function values are ignored.
+     */
+    add(...cleanups: OptionalCleanup[]): void;
+
+    /**
+     * Create a single-use subordinate savepoint that rolls back if its parent
+     * does.  (For long-lived parent savepoints that sequentially spin off lots
+     * of subordinate savepoints.)
+     *
+     * This is similar to calling `subtask = new savepoint();
+     * parent.add(subtask.rollback);`, but with an important difference: when
+     * the subtask savepoint rolls back, it will remove its rollback from the
+     * parent savepoint.  This prevents a lot of useless callbacks accumulating
+     * in the parent savepoint.
+     *
+     * (Note that the link is a one-time thing: if you reuse the task savepoint
+     * after it's been rolled back, you'll need to use `parent.link(child,
+     * stop?)` to re-attach it to the parent (or attach it to a different one)
+     *
+     * @param stop The function the parent should call to roll back the subtask;
+     * defaults to the new task's `rollback()` method if not given.
+     * @returns A new linked savepoint
+     */
+    subtask(stop?: Cleanup): SavePoint
+
+    /**
+     * Link a child savepoint to this savepoint, such that the child will remove
+     * itself from the parent.
+     *
+     * Similar to {@link subtask()}, except that you supply the child savepoint
+     * instead of it being created automatically.
+     *
+     * @param subtask The savepoint to link.
+     * @param stop The function the parent should call to roll back the subtask;
+     * defaults to the subtask's `rollback()` method if not given.
+     * @returns The subtask savepoint.
+     */
+    link(subtask: SavePoint, stop?: Cleanup): SavePoint
+}
+
+export interface SavePoint extends ActiveSavePoint {
+    /**
+     * Call all the added cleanup callbacks; if any throw exceptions, they're
+     * converted to unhandled promise rejections (so that all cleanups can
+     * be called even if one throws an error).
+     */
+    rollback(): void;
+
+    /**
+     * Invoke a function with this savepoint as the active one, so that `savepoint.add()`
+     * will add things to it, `savepoint.subtask()` will fork it, and so on.
+     *
+     * @param fn The function to call
+     * @param args The arguments to call it with, if any
+     * @returns The result of calling fn(...args)
+     */
+    run<F extends PlainFunction>(fn?: F, ...args: Parameters<F>): ReturnType<F>
+}
+
+var currentSP: SavePoint;
+
+function getCurrent() {
+    if (currentSP) return currentSP;
+    throw new Error("no savepoint is currently active");
+}
+
+export let savepoint: savepoint & {
+    /** @internal - used for effect scoping */
+    wrapEffect(action: () => OptionalCleanup): () => OptionalCleanup
+} = class implements SavePoint {
+
+    constructor(action?: () => OptionalCleanup) {
+        if (action) {
+            const old = currentSP; currentSP = this;
+            try {
+                const cb = action();
+                if (cb) this.add(cb);
+            } catch (e) {
+                this.rollback();
+                throw e;
+            } finally {
+                currentSP = old;
+            }
+        }
+    }
+
+    static get active() { return !!currentSP; }
+    static add(...cleanups: OptionalCleanup[]): void;
+    static add() { getCurrent().add.apply(currentSP, arguments); }
+    static subtask(fn?: Cleanup) { return getCurrent().subtask(fn); }
+    static link(subtask: SavePoint, fn?: Cleanup) { return getCurrent().link(subtask, fn); }
+
+    static wrapEffect(action: () => OptionalCleanup): () => OptionalCleanup {
+        const sp = new this, {cleanups} = sp;
+        return () => {
+            const old = currentSP;
+            currentSP = sp;
+            try {
+                const cb = action();
+                if (typeof cb === "function") cleanups.push(cb);
+            } catch (e) {
+                sp.rollback();
+                throw e;
+            } finally {
+                currentSP = old;
+            }
+            if (cleanups.length) return sp.rollback;
+        }
+    }
+
+    private cleanups = [] as Cleanup[];
+
+    rollback = __rollback.bind(this.cleanups) as () => any;
+
+    add(...cleanups: OptionalCleanup[]): void;
+    add() {
+        var {cleanups} = this;
+        for (var i = 0; i<arguments.length; i++) {
+            var item = arguments[i];
+            if (typeof item === "function") cleanups.push(item);
+        }
+    };
+
+    run<F extends PlainFunction>(fn?: F, ...args: Parameters<F>): ReturnType<F> {
+        const old = currentSP; currentSP = this;
+        try { return fn.apply(null, args); } catch (e) { this.rollback(); throw e; } finally { currentSP = old; }
+    }
+
+    subtask(stop?: Cleanup): SavePoint {
+        return this.link(new savepoint, stop);
+    }
+
+    link(subtask: SavePoint, stop?: Cleanup) {
+        const {cleanups} = this;
+        this.add(stop ||= subtask.rollback);
+        subtask.add(() => {
+            const idx = cleanups.indexOf(subtask.rollback);
+            if (idx >= 0) cleanups.splice(idx, 1);
+        })
+        return subtask;
+    }
+}
+
+function __rollback(this: Cleanup[]) {
+    while (this.length) try { (this.pop() as Cleanup)?.(); } catch (e) { Promise.reject(e); };
+}
+
+/** @deprecated - use `savepoint.active` instead */
+export function canCleanup() { return savepoint.active; }
+
+/** @deprecated - use `savepoint.add()` instead */
+export function cleanup(...cleanups: OptionalCleanup[]) { savepoint.add(...cleanups); }
+
+/** @deprecated - use `new savepoint(action).rollback` */
 export function withCleanup(action: () => OptionalCleanup): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: false): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: true): OptionalCleanup;
 export function withCleanup(action: () => OptionalCleanup, optional?: boolean): OptionalCleanup {
-    const old = cleanupContext;
-    const fx = cleanupContext = [] as CleanupContext;
-    try {
-        const cb = action?.();
-        if (cb) fx.push(cb);
-        if (fx.length || !optional) {
-            return runCleanups.bind(fx);
-        }
-    } catch(e) {
-        runCleanups.call(fx);
-        throw e;
-    } finally {
-        cleanupContext = old;
-    }
-}
-
-function runCleanups(this: CleanupContext) {
-    while (this.length) try { (this.pop() as Cleanup)?.(); } catch (e) { Promise.reject(e); }
+    return new savepoint(action).rollback;
 }
 
 var currentJob: Job<any>;
@@ -96,24 +244,12 @@ const IS_RUNNING = 1, IS_FINISHED = 2, IS_ERROR = 4 | IS_FINISHED, WAS_PROMISED 
 
 class _Job<T> implements Job<T> {
     constructor(protected g: JobGenerator<T>) {
-        // Ensure the job stops when its parent does
-        const doStop = this.return.bind(this, undefined);
-        cleanup(doStop);
-
-        // As the last step of stopping, remove our doStop callback
-        // from the parent context, so contexts that spawn lots of
-        // jobs don't keep needlessly growing their cleanup lists
-        const parentCtx = cleanupContext;
-        this._ctx.push(() => {
-            const idx = parentCtx.indexOf(doStop);
-            if (idx >= 0) parentCtx.splice(idx, 1);
-
+        this.savepoint.add(() => {
             // Check for untrapped error, promote to unhandled rejection
             if ((this._flags & (IS_ERROR | WAS_PROMISED)) === IS_ERROR) {
                 Promise.reject(this._result);
             }
         })
-
         // Start asynchronously
         defer(() => { this._flags &= ~IS_RUNNING; this.next(); });
     }
@@ -138,25 +274,24 @@ class _Job<T> implements Job<T> {
 
 
     cleanup(f: Cleanup) {
-        this._ctx.push(f);
         // Already closed?  Defer it to run anyway
-        if (this._ctx.length === 1 && !this.g) defer(runCleanups.bind(this._ctx));
+        if (!this.g) defer(f); else this.savepoint.add(f);
     }
 
     // === Internals === //
 
-    protected readonly _ctx: CleanupContext = [];
+    protected readonly savepoint = savepoint.subtask(this.return.bind(this, undefined));
     protected _flags = IS_RUNNING;
     protected _result: any
 
     protected _step(method: "next" | "throw" | "return", arg: any) {
         // Don't resume a job while it's running
         if (this._flags & IS_RUNNING) return defer(this._step.bind(this, method, arg));
-        const oldCtx = cleanupContext;
+        const oldSP = currentSP;
         try {
             this._flags |= IS_RUNNING;
             currentJob = this;
-            cleanupContext = this._ctx;
+            currentSP = this.savepoint;
             try {
                 const res: IteratorResult<any, T> = untracked(this.g[method].bind(this.g, arg));
                 if (!res.done) return;
@@ -168,10 +303,10 @@ class _Job<T> implements Job<T> {
             }
             // Generator returned or threw: ditch it and run cleanups
             this.g = undefined;
-            runCleanups.call(this._ctx);
+            this.savepoint.rollback();
         } finally {
             currentJob = undefined;
-            cleanupContext = oldCtx;
+            currentSP = oldSP;
             this._flags &= ~IS_RUNNING;
         }
     }

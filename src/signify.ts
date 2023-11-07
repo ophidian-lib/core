@@ -7,7 +7,7 @@ export { untracked } from "@preact/signals-core";
 import { computed as _computed, batch, signal as _signal, effect as _effect, Signal, untracked } from "@preact/signals-core";
 import { addOn } from "./add-ons";
 import { defer } from "./defer";
-import { OptionalCleanup, canCleanup, cleanup, withCleanup } from "./cleanups";
+import { OptionalCleanup, savepoint } from "./cleanups";
 
 export interface Value<T> { (): T; }
 export interface Writable<T> extends Value<T> { set(v: T): void; }
@@ -116,12 +116,12 @@ export function action(_clsOrProto: object, _name: string, desc: {value?: (...ar
  * canceled.
  */
 export function effect(action: () => OptionalCleanup, standalone?: boolean): () => void {
-    const haveContext = canCleanup();
+    const haveContext = savepoint.active;
     if (standalone === false && !haveContext) throw new Error(
         "Must be called from within another effect or @rule"
     );
-    const cb = _effect(() => withCleanup(action, true));
-    if (haveContext && standalone !== true) cleanup(cb);
+    const cb = _effect(savepoint.wrapEffect(action));
+    if (haveContext && standalone !== true) savepoint.add(cb);
     return cb;
 }
 

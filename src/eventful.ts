@@ -1,4 +1,4 @@
-import { Awaiting, OptionalCleanup, cleanup, Job, withCleanup, job } from "./cleanups";
+import { Awaiting, OptionalCleanup, Job, job, savepoint } from "./cleanups";
 import { computed, effect, untracked } from "./signify";
 import type { Source, SignalKind, TalkbackKind as Upstream } from "wonka";
 export type { Source } from "wonka";
@@ -45,16 +45,15 @@ export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
  * become an unhandled promise rejection.
  */
 export function when<T>(source: Waitable<T>, sink: (value: T) => OptionalCleanup, onErr?: (e: any) => void): () => void {
-    var cleanupFn: OptionalCleanup;
+    var outer = savepoint.active && savepoint.subtask(unsub), inner = new savepoint();
     var ended = false;
     var upstream: UpstreamFn;
     if (isPromiseLike<T>(source)) {
         const sendFinal = <T>(fn: (v: T) => any) => (val: T) => {
             if (ended || !fn) return;
-            cleanupFn = withCleanup(fn.bind(null, val), true);
-            doCleanup();
+            inner.add(inner.run(fn, val));
+            inner.rollback();
         }
-        cleanup(unsub);
         (source as PromiseLike<T>).then(sendFinal(sink), sendFinal(onErr));
         return unsub;
     } else if (typeof source !== "function") {
@@ -63,12 +62,9 @@ export function when<T>(source: Waitable<T>, sink: (value: T) => OptionalCleanup
         const cond = computed(source as () => T)
         return effect(() => {
             var res: T;
-            if (res = cond()) return untracked(
-                withCleanup.bind(null, sink.bind(null, res), true)
-            );
+            if (res = cond()) savepoint.add(untracked(sink.bind(null, res)));
         })
     }
-    cleanup(unsub);
     (source as Source<T>)(signal => {
         if (signal === End) {
             upstream = undefined;
@@ -76,16 +72,16 @@ export function when<T>(source: Waitable<T>, sink: (value: T) => OptionalCleanup
         } else if (signal.tag === Start) {
             (upstream = signal[0])(Pull);
         } else if (!ended) {
-            doCleanup();
-            cleanupFn = withCleanup(sink.bind(null, signal[0]), true);
+            inner.rollback();
+            inner.add(inner.run(sink, signal[0]));
             if (upstream) upstream(Pull);
         }
     });
     return unsub;
-    function doCleanup() { cleanupFn && cleanupFn(); cleanupFn = undefined; }
     function unsub() {
         if (!ended) {
-            doCleanup();
+            inner.rollback();
+            if (outer) outer.rollback();
             ended = true;
             if (upstream) upstream(Close);
         }

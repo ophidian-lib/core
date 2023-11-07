@@ -1,7 +1,7 @@
 import { the, Service, use } from "./services";
 import { obsidian as o } from "./obsidian";
 import { Context, Useful } from "to-use";
-import { cleanup, withCleanup } from "./cleanups";
+import { savepoint } from "./cleanups";
 import { setMap } from "./add-ons";
 
 /**
@@ -69,8 +69,8 @@ export class ResourceMap<T extends SharedResource<K>, K> extends Service {
     open(key: K) {
         const res = this.pool.get(key) || setMap(this.pool, key, new this.factory(this.use, key));
         ++res.openCount;
-        cleanup(() => { if (!--res.openCount) { res.unload(); this.pool.delete(key); } });
-        if (res.openCount === 1) res.register(withCleanup(() => res.load()));
+        savepoint.add(() => { if (!--res.openCount) { res.unload(); this.pool.delete(key); } });
+        if (res.openCount === 1) res.register(new savepoint(() => res.load()).rollback);
         return res;
     }
 }
