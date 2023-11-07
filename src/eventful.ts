@@ -17,9 +17,9 @@ export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
 /**
  * Subscribe a callback (in a cancelable way) to run whenever the given data
  * source provides a value.  A cancellation function is returned and also
- * registered in the current cleanup context, if any.  The callback is run in
- * its own cleanup context and can return a cleanup function.  The callback's
- * actions will be cleaned up when the next value arrives, or the subscription
+ * registered in the current savepoint, if any.  The callback is run with
+ * its own savepoint and can return a cleanup function.  The callback's
+ * actions will be rolled back when the next value arrives, or the subscription
  * is canceled, or the data source has no more values (e.g. if it's a promise or
  * a finite event stream).
  *
@@ -31,7 +31,7 @@ export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
  * - A promise, or promise-like object with a `.then()` method
  *
  * @param sink A callback that will receive values from the source.  The
- * callback is run in its own cleanup context and can return a cleanup function.
+ * callback is run with its own savepoint and can return a cleanup function.
  * Cleanups will be called when the next value is produced, there are no more
  * values, or the subscription is canceled.
  *

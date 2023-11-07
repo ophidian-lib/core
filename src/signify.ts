@@ -73,7 +73,7 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
  *
  * This is equivalent to wrapping the method body with `return effect(() => {...}, false);`,
  * which means the method can only be called from within a running `effect()`, `@rule`, or
- * `withCleanup()`.
+ * other active savepoint.
  */
 export function rule(_clsOrProto: object, _name: string, desc: {value?: () => unknown | (() => unknown)}): any {
     const method = desc.value;
@@ -98,17 +98,17 @@ export function action(_clsOrProto: object, _name: string, desc: {value?: (...ar
  * (before `effect()` returns), and then re-run each time any of the signals it
  * used (in its previous run) change.  It can optionally return a "cleanup"
  * function that will be run before the next invocation of the compute function,
- * or when the effect is stopped.  (It can also use the `cleanup()` API to
+ * or when the effect is stopped.  (It can also use the `savepoint.add()` API to
  * register multiple cleanups, and any nested `effect()` calls will be added to
- * the cleanup list as well.)
+ * the savepoint as well.)
  *
  * @param standalone If set to `true`, the effect will not be made a child of
  * any currently-running effect, which means you must call the returned "stop"
  * callback to explicitly stop the effect.  If set to `false`, the effect is
  * explicitly intended as a child effect, and so there *must* be a currently-
- * running effect (or `withCleanup()` block), or else an error will be thrown.
+ * running effect (or other active savepoint), or else an error will be thrown.
  * Any value other than true (or omitting it) means the effect can be used
- * either standalone, or inside another `effect()` or `withCleanup()` block.
+ * either standalone, or inside another `effect()` or active savepoint.
  *
  * @returns A callback to stop the effect from re-running.  You do not need to
  * invoke it for effects that are started by another (running) effect, as they

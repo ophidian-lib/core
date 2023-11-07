@@ -7,7 +7,7 @@ import { setMap } from "./add-ons";
 /**
  * Return an opened resource of the requested type.
  *
- * You must invoke this in a cleanup context (i.e. effect, job, withCleanup,
+ * You must invoke this with an active savepoint (i.e. in an effect, job, @rule,
  * etc.) so the resource can be released when you're done with it.
  *
  * @param kind The {@link SharedResource} subclass you want an instance of
@@ -32,10 +32,10 @@ export function claim<T extends SharedResource<K>, K>(kind: o.Constructor<T>, ke
  * can be any type a Map can use as a key, including void.
  *
  * When claimed or opened, resources have their `onload()` method called in a
- * cleanup context, so they will be automatically released when the current job,
- * effect, or other context is cleaned up.
+ * savepoint, so they will be automatically released when the current job,
+ * effect, or other savepoint is rolled back.
  *
- * The same resource can be claimed from more than one cleanup context, and
+ * The same resource can be claimed from more than one savepoint context, and
  * opens are tracked so that the shared resource instance will only be unloaded
  * once all the active claims are released. (That is, when all of the contexts
  * that opened the resource are cleaned up).
