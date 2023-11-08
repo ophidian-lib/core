@@ -133,33 +133,42 @@ export let savepoint: savepoint & {
     static link(subtask: SavePoint, fn?: Cleanup) { return getCurrent().link(subtask, fn); }
 
     static wrapEffect(action: () => OptionalCleanup): () => OptionalCleanup {
-        const sp = new this, {cleanups} = sp;
+        const sp = new this;
         return () => {
             const old = currentSP;
             currentSP = sp;
             try {
                 const cb = action();
-                if (typeof cb === "function") cleanups.push(cb);
+                if (typeof cb === "function") sp._push(cb);
             } catch (e) {
                 sp.rollback();
                 throw e;
             } finally {
                 currentSP = old;
             }
-            if (cleanups.length) return sp.rollback;
+            if (!sp.isEmpty) return sp.rollback;
         }
     }
 
-    private cleanups = [] as Cleanup[];
+    protected _next: DNode<Cleanup>;
+    protected _prev: DNode<Cleanup>;
+    protected _push(val: Cleanup) {
+        let node = getnode(val, this._next, this as unknown as DNode<Cleanup>);
+        if (this._next) this._next._prev = node;
+        return this._next = node;
+    }
 
-    rollback = __rollback.bind(this.cleanups) as () => any;
+    get isEmpty() { return !this._next; }
+
+    rollback = () => {
+        while (!this.isEmpty) try { freenode(this._next)?.(); } catch (e) { Promise.reject(e); }
+    }
 
     add(...cleanups: OptionalCleanup[]): void;
     add() {
-        var {cleanups} = this;
         for (var i = 0; i<arguments.length; i++) {
             var item = arguments[i];
-            if (typeof item === "function") cleanups.push(item);
+            if (typeof item === "function") this._push(item);
         }
     };
 
@@ -173,19 +182,13 @@ export let savepoint: savepoint & {
     }
 
     link(subtask: SavePoint, stop?: Cleanup) {
-        const {cleanups} = this;
-        this.add(stop ||= subtask.rollback);
-        subtask.add(() => {
-            const idx = cleanups.indexOf(subtask.rollback);
-            if (idx >= 0) cleanups.splice(idx, 1);
-        })
+        stop ||= subtask.rollback;
+        var node = this._push(() => { node = null; stop(); });
+        subtask.add(() => { freenode(node); node = null; });
         return subtask;
     }
 }
 
-function __rollback(this: Cleanup[]) {
-    while (this.length) try { (this.pop() as Cleanup)?.(); } catch (e) { Promise.reject(e); };
-}
 
 /** @deprecated - use `savepoint.active` instead */
 export function canCleanup() { return savepoint.active; }
@@ -315,5 +318,34 @@ class _Job<T> implements Job<T> {
             currentSP = oldSP;
             this._flags &= ~IS_RUNNING;
         }
+    }
+}
+
+
+type DNode<T> = { _next: DNode<T>, _prev: DNode<T>, _data: T}
+
+function getnode<T>(data: T, next: DNode<T>, prev: DNode<T>): DNode<T> {
+    if (freelist) {
+        let node = freelist;
+        freelist = node._next;
+        node._next = next;
+        node._prev = prev;
+        node._data = data;
+        return node;
+    }
+    return {_next: next, _prev: prev, _data: data}
+}
+
+var freelist: DNode<any>;
+
+function freenode<T>(node: DNode<T>): T {
+    if (node) {
+        let data = node._data;
+        if (node._next) node._next._prev = node._prev;
+        if (node._prev) node._prev._next = node._next;
+        node._next = freelist;
+        freelist = node;
+        node._prev = node._data = undefined;
+        return data;
     }
 }
