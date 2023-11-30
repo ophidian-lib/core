@@ -212,26 +212,37 @@ export type Awaiting<T> = Generator<void, T, any>;
 /**
  * Create a new job or fetch the currently-running one
  *
- * @param g (Optional) A generator, or a no-argument generator function, that
- * will run as the job.  If not given, return the current job.  (Note that since
- * arrow functions can't be generators, functions used to start a job cannot
- * use `this`.  If you need a job function to have a `this`, make it a method
- * and call it, or use {@link spawn} instead.)
+ * If no arguments given, returns the current job (if any).  If one argument is
+ * given, it should be either a generator, or a no-arguments generator function.
+ *
+ * If two arguments are given, the second should be a no-arguments generator
+ * function, and the first is the `this` object the function should be called
+ * with.  (This two-argument form is needed since you can't make generator
+ * arrows in JS yet.)
+ *
+ * Note that TypeScript and/or VSCode may require that you give the function an
+ * explicit `this` parameter (e.g. `job(this, function *(this) {...}));`) in
+ * order to correctly infer types inside the generator function.
  *
  * @returns A new Job instance, or the current job (which may be undefined).
  */
-export function job<R>(g?: JobGenerator<R> | ((this:void) => JobGenerator<R>) ): Job<R> {
-    return g ? (new _Job(typeof g === "function" ? g() : g)) : currentJob; }
+export function job<R,T>(thisObj: T, fn: (this:T) => JobGenerator<R>): Job<R>
+export function job<R>(fn: (this:void) => JobGenerator<R>): Job<R>
+export function job(): Job<unknown> | undefined
+export function job<R>(g: JobGenerator<R>): Job<R>
+export function job<R>(
+    g?: JobGenerator<R> | ((this:void) => JobGenerator<R>),
+    fn?: () => JobGenerator<R>
+): Job<R> {
+    if (typeof fn === "function") return new _Job(fn.call(g));
+    return g ? (new _Job(typeof g === "function" ? g() : g)) : currentJob;
+}
 
 /**
- * Create a new job from a context (`this`) and generator function
- *
- * @param thisArg The desired `this` for the generator function to receive
- * @param gf The generator function to be run in the new job.
- * @returns The new job
+ * @deprecated Use `job(thisArg, function*(this) { ... })` instead.
  */
 export function spawn<T,R>(thisArg: T, gf: (this: T) => JobGenerator<R>): Job<R> {
-    return job(gf.call(thisArg) as JobGenerator<R>);
+    return job(thisArg, gf);
 }
 
 export interface Job<T> extends Promise<T> {
