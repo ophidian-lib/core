@@ -9,9 +9,10 @@
   "author": "PJ Eby",
   "license": "ISC",
   "type": "module",
-  "module": "src/index.ts",
+  "files": ["./dist/*"],
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./dist/index.js"
   },
   "sideEffects": false,
   "dependencies": {
@@ -24,6 +25,13 @@
     "wonka": "^6.3.4"
   },
   "devDependencies": {
-    "@types/node": "16"
+    "@types/node": "16",
+    "esbuild-plugin-inline-import": "^1.0.4",
+    "sass": "^1.76.0",
+    "tsup": "^8.0.2",
+    "typescript": "5.2.2"
+  },
+  "scripts": {
+    "prepare": "tsup"
   }
 }

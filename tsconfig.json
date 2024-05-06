@@ -6,6 +6,11 @@
         "useDefineForClassFields": false,
         "newLine": "lf",
         "moduleResolution": "node",
-        "lib": ["ES2018", "DOM"]
-    }
+        "esModuleInterop": true,
+        "strict": false,
+        "lib": ["ES2018", "DOM"],
+    },
+    // Keep VSCode, tsc, typedoc, tsup, etc. from treating any output .ts files
+    // as part of their input:
+    "exclude": ["dist/*"]
 }
