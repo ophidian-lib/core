@@ -55,12 +55,3 @@ export function walkLayout(item: LayoutItem | layoutVisitor, visitor?: layoutVis
     }
     return false;
 }
-
-declare module "obsidian" {
-    interface WorkspaceParent {
-        children: WorkspaceItem[]
-    }
-    interface Workspace {
-        floatingSplit?: WorkspaceParent & { children: WorkspaceWindow[] }
-    }
-}

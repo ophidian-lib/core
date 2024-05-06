@@ -10,11 +10,6 @@ interface HasLayoutSettings {
     [layoutProps]?: any
 }
 
-declare module "obsidian" {
-    interface Workspace extends HasLayoutSettings {}
-    interface WorkspaceItem extends HasLayoutSettings {}
-}
-
 /** Things that can have layout-stored settings  */
 export type LayoutItem = o.WorkspaceItem | o.Workspace;
 
@@ -198,16 +193,4 @@ function loadSettings(where: HasLayoutSettings, state: any) {
     const props: any = state?.[layoutProps];
     if (props) where[layoutProps] = cloneValue(props);
     app.workspace.trigger(loadEvent, where, state);
-}
-
-
-declare module "obsidian" {
-    interface WorkspaceItem {
-        serialize(): any;
-    }
-    interface Workspace {
-        setLayout(layout: any): Promise<void>;
-        clearLayout(): Promise<void>;
-        deserializeLayout(state: any, ...etc: any[]): Promise<WorkspaceItem>;
-    }
 }

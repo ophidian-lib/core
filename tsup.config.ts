@@ -6,7 +6,7 @@ import * as sass from "sass";
 export default defineConfig({
     entry: ["src/index.ts"],
     sourcemap: true,
-    format: ["cjs", "esm"],
+    format: ["esm"],
     treeshake: true,
     dts: true,
     clean: true,

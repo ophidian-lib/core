@@ -213,6 +213,7 @@ import {
     WorkspaceTabs,
     WorkspaceWindow,
     WorkspaceWindowInitData,
+    IconName,
 } from "obsidian";
 
 export declare namespace obsidian { export {
@@ -418,8 +419,10 @@ export declare namespace obsidian { export {
     WorkspaceTabs,
     WorkspaceWindow,
     WorkspaceWindowInitData,
+    IconName,
 }}
 
 export namespace obsidian {
-    Object.assign(obsidian, require("obsidian") as typeof import("obsidian"));
+    // The try {} wrapper is needed for tsup to not barf on the require()  :-(
+    try { Object.assign(obsidian, require("obsidian") as typeof import("obsidian")); } catch(e) {}
 }

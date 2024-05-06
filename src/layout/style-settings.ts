@@ -28,9 +28,3 @@ export class StyleSettings extends Service {
         if (app.workspace.layoutReady) app.workspace.trigger("parse-style-settings");
     }
 }
-
-declare module "obsidian" {
-    interface Plugin {
-        loadCSS(): Promise<void>;
-    }
-}

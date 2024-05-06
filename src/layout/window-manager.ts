@@ -218,22 +218,3 @@ export function containerForWindow(win: Window): o.WorkspaceContainer {
 export function focusedContainer(): o.WorkspaceContainer | undefined {
     return allContainers().filter(c => c.win.document.hasFocus()).pop();
 }
-
-declare module "obsidian" {
-    interface Workspace {
-        floatingSplit?: WorkspaceParent & { children: WorkspaceWindow[] };
-        clearLayout(): Promise<void>
-    }
-    interface WorkspaceItem {
-        component: Component
-    }
-    interface WorkspaceWindow extends WorkspaceParent {
-        win: Window
-    }
-    interface WorkspaceLeaf {
-        containerEl: HTMLDivElement;
-    }
-    interface Component {
-        _loaded: boolean
-    }
-}

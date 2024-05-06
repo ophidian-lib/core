@@ -3,7 +3,7 @@
 Run with:
 
 ~~~sh
-mdsh export-template.md >src/obsidian.ts
+mdsh exports-template.md >src/obsidian.ts
 ~~~
 
 ```ts
@@ -30,11 +30,12 @@ EXPORTS
 }}
 
 export namespace obsidian {
-    Object.assign(obsidian, require("obsidian") as typeof import("obsidian"));
+    // The try {} wrapper is needed for tsup to not barf on the require()  :-(
+    try { Object.assign(obsidian, require("obsidian") as typeof import("obsidian")); } catch(e) {}
 }
 ```
 
 ```shell
-exports=$(find . -name obsidian.d.ts|xargs grep "export [a-z]"|sed -e 's~ *export \(abstract \+\)\?[a-z]\+ \+\([A-Za-z0-9_]\+\).*~    \2,~')
+exports=$(grep "export [a-z]" node_modules/obsidian/obsidian.d.ts|sed -e 's~ *export \(abstract \+\)\?[a-z]\+ \+\([A-Za-z0-9_]\+\).*~    \2,~')
 printf %s "${mdsh_raw_ts[@]//EXPORTS/"$exports"}"
 ```

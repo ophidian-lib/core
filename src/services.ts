@@ -43,13 +43,6 @@ export function the<K extends Key>(key: K, parent?: Partial<Useful>): Provides<K
     return getContext(parent)(key);
 }
 
-declare module "to-use" {
-    interface GlobalContext {
-        service(service: o.Component): Context
-        plugin(plugin: o.Plugin): Context
-    }
-}
-
 export class Service extends o.Component {
     use = use.service(this)
 }

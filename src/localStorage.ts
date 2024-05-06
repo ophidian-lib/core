@@ -76,8 +76,3 @@ export class LocalObject<T extends {}> extends o.Component {
     }
 }
 
-declare module "obsidian" {
-    interface App {
-        appId: string;
-    }
-}
