@@ -1,5 +1,5 @@
 import { obsidian as o } from "../obsidian";
-import { Context, Service, onLoad, safeRemoveChild, use } from "../services";
+import { Context, Service, onLoad, safeRemoveChild, app } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";
 import { isLeafAttached } from "./walk";

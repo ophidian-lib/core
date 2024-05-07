@@ -2,7 +2,7 @@ import { Component, PluginSettingTab, Setting } from "obsidian";
 import { when } from "../eventful";
 import { obsidian as o } from "../obsidian";
 import { SettingsService } from "../plugin-settings";
-import { Useful, getContext, onLoad, use } from "../services";
+import { Useful, getContext, onLoad, use, app } from "../services";
 import { signal } from "../signify";
 
 export type Feature<T> = (ctx: T) => unknown;

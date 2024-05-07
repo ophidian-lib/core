@@ -1,7 +1,7 @@
 import { setMap } from "./add-ons";
 import { obsidian as o } from "./obsidian";
 import { Component } from "obsidian";
-import { use } from "./services";
+import { use, app } from "./services";
 import { signal } from "./signify";
 
 // reuse/recycle sets and maps instead of constantly allocating new ones

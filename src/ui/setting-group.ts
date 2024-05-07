@@ -1,7 +1,7 @@
 import { Setting } from "obsidian";
 import { LocalObject } from "../localStorage";
 import { obsidian as o } from "../obsidian";
-import { Service, the } from "../services";
+import { Service, the, app } from "../services";
 import { computed, effect, signal } from "../signify";
 import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder";
 import groupStyle from "scss:./setting-group.scss";
