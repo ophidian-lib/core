@@ -1,3 +1,6 @@
+> [!note]
+> Been using Ophidian a while?  Check out the [CHANGELOG file](CHANGELOG.md) to see what's new... and what's coming soon.
+
 ## A Component Framework for Obsidian Plugins
 
 Some [Obsidian](https://obsidian.md) plugins are too big to just slap everything in one class.  But as you break things into smaller parts, you end up doing a lot of hard-to-change and fragile `this.that.theOther.thing`, that also makes the parts less reusable.
