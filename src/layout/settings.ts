@@ -2,7 +2,7 @@ import { around, dedupe } from "monkey-around";
 import { obsidian as o } from "../obsidian";
 import { walkLayout } from "./walk";
 import { defer } from "../defer";
-import { Useful, Service } from "../services";
+import { app, Useful, Service } from "../services";
 import { cloneValue } from "../clone-value";
 
 /** An object with layout-stored settings (Workspace, WorkspaceItem, etc.) */
@@ -173,10 +173,10 @@ export class LayoutStorage extends Service {
 }
 
 const revision = 2;
-const STORAGE_EVENTS = Symbol.for(`v${revision}.layout-storage-events.ophidian.peak-dev.org`);
+const STORAGE_EVENTS = /* @__PURE__ */ (() => Symbol.for(`v${revision}.layout-storage-events.ophidian.peak-dev.org`))();
 const layoutProps = "ophidian:layout-settings";
-const loadEvent   = `ophidian-layout-storage:v${revision}:item-load`;
-const saveEvent   = `ophidian-layout-storage:v${revision}:item-save`;
+const loadEvent   = /* @__PURE__ */ (() => `ophidian-layout-storage:v${revision}:item-load`)();
+const saveEvent   = /* @__PURE__ */ (() => `ophidian-layout-storage:v${revision}:item-save`)();
 const setEvent    = `ophidian-layout-storage:set:`;
 
 function serializeSettings(old: () => any) {

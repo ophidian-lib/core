@@ -3,6 +3,7 @@ import { Context, Service, onLoad, safeRemoveChild, use } from "../services";
 import { defer } from "../defer";
 import { around } from "monkey-around";
 import { isLeafAttached } from "./walk";
+import { Component } from "obsidian";
 
 export type PWCFactory<C extends PerWindowComponent> = {
     new (use: Context, item: o.WorkspaceContainer): C
@@ -34,7 +35,7 @@ export type PWCFactory<C extends PerWindowComponent> = {
  * and automatically, you can leave off the `.watch()` call, e.g.
  * `titleWidget = this.use(TitleWidget)` instead.
  */
-export class PerWindowComponent extends o.Component {
+export class PerWindowComponent extends Component {
 
     win = this.container.win;
 
@@ -42,7 +43,7 @@ export class PerWindowComponent extends o.Component {
         super();
     }
 
-    [use.factory]() {
+    "use.factory"() {
         return new WindowManager(this.constructor as PWCFactory<this>);
     }
 

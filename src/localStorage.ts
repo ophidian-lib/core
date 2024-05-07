@@ -1,7 +1,7 @@
-import { obsidian as o } from "./obsidian";
+import { Component } from "obsidian";
 import defaults from "defaults";
 
-export class LocalObject<T extends {}> extends o.Component {
+export class LocalObject<T extends {}> extends Component {
     protected defaultJSON: string;
 
     constructor(

@@ -45,7 +45,7 @@ export function tick() {
 type Signals<T> = Partial<{[K in keyof T]: Writable<T[K]>}>
 type Computed<T> = Partial<{[K in keyof T]: Value<T[K]>}>
 
-export const signals = addOn(function<T extends object>(_k: T): Signals<T> { return {} });
+export const signals = /* @__PURE__ */ addOn(function<T extends object>(_k: T): Signals<T> { return {} });
 
 // Must be used *without* accessor and *with* useDefineForClassFields: false
 export function prop<T>(_clsOrProto: object, name: string) {

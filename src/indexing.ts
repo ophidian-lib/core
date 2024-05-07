@@ -1,5 +1,6 @@
 import { setMap } from "./add-ons";
 import { obsidian as o } from "./obsidian";
+import { Component } from "obsidian";
 import { use } from "./services";
 import { signal } from "./signify";
 
@@ -14,7 +15,7 @@ function recordEntry(k: any, v: any) {
     ((toAdd || (toAdd = freeMaps.pop() || new Map)).get(k) || setMap(toAdd, k, freeSets.pop() || new Set)).add(v);
 }
 
-export abstract class AbstactIndexer<T extends Record<string,any>, I extends object> extends o.Component {
+export abstract class AbstactIndexer<T extends Record<string,any>, I extends object> extends Component {
     protected indices = new Map<keyof T, Map<any, Set<I>>>();
     protected version = signal(0);
     protected history = new WeakMap<I,Map<keyof T,Set<any>>>();

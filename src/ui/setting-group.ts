@@ -1,3 +1,4 @@
+import { Setting } from "obsidian";
 import { LocalObject } from "../localStorage";
 import { obsidian as o } from "../obsidian";
 import { Service, the } from "../services";
@@ -11,7 +12,7 @@ export function group(owner?: FieldParent) {
     return new SettingGroup(owner || useSettingsTab());
 }
 
-class SettingGroup<T extends FieldParent> extends o.Setting implements FieldParent {
+class SettingGroup<T extends FieldParent> extends Setting implements FieldParent {
 
     readonly detailsEl: HTMLDetailsElement;
 

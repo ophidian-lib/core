@@ -1,6 +1,8 @@
 import { obsidian as o } from "../obsidian";
 import { defer } from "../defer";
 import { deferred } from "../deferred";
+import { FuzzySuggestModal } from "obsidian";
+import { app } from "../services";
 
 export function modalSelect<T>(
     items: T[],
@@ -11,7 +13,7 @@ export function modalSelect<T>(
 
     const {resolve, promise} = deferred<{item: T, event: KeyboardEvent|MouseEvent}>();
 
-    const modal = new (class extends o.FuzzySuggestModal<T> {
+    const modal = new (class extends FuzzySuggestModal<T> {
         declare scope: o.Scope;
 
         getItemText(item: T) { return format?.(item) ?? ""+item; }

@@ -1,3 +1,4 @@
+import { Component, PluginSettingTab, Setting } from "obsidian";
 import { when } from "../eventful";
 import { obsidian as o } from "../obsidian";
 import { SettingsService } from "../plugin-settings";
@@ -24,7 +25,7 @@ export function field(owner?: FieldParent) {
     return new FieldBuilder(owner || useSettingsTab());
 }
 
-export interface SettingsProvider extends o.Component {
+export interface SettingsProvider extends Component {
     showSettings?(component: o.Component): void
 }
 
@@ -32,7 +33,7 @@ export function useSettingsTab(owner?: SettingsProvider & Partial<Useful>) {
     return getContext(owner)(SettingsTabBuilder).addProvider(owner) as SettingsTabBuilder;
 }
 
-export class SettingsTabBuilder extends o.PluginSettingTab implements Useful, FieldParent {
+export class SettingsTabBuilder extends PluginSettingTab implements Useful, FieldParent {
 
     plugin = use(o.Plugin)
     use = use.this;
@@ -79,7 +80,7 @@ export interface FieldParent {
     with(...features: Feature<this>[]): this
 }
 
-export class FieldBuilder<T extends FieldParent> extends o.Setting {
+export class FieldBuilder<T extends FieldParent> extends Setting {
     constructor(public builder: T, parentEl = builder.containerEl ) {
         super(parentEl);
     }

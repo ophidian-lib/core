@@ -1,10 +1,11 @@
 import { obsidian as o } from "./obsidian";
 import { Context, Useful, Key, Provides, use as _use } from "to-use";
 import { defer } from "./defer";
+import { Component } from "obsidian";
 export type * from "to-use";
 export var app: o.App;
 
-export const use = (use => {
+export const use = /* @__PURE__ */ (use => {
     use.service = function service(service: o.Component) {
         use(Bootloader).addChild(service)
         return use.this;
@@ -43,19 +44,19 @@ export function the<K extends Key>(key: K, parent?: Partial<Useful>): Provides<K
     return getContext(parent)(key);
 }
 
-export class Service extends o.Component {
+export class Service extends Component {
     use = use.service(this)
 }
 
 /** Service manager to ensure services load and unload with the plugin in an orderly manner */
-class Bootloader extends o.Component { // not a service, so it doesn't end up depending on itself
+class Bootloader extends Component { // not a service, so it doesn't end up depending on itself
     loaded: boolean;
     children: Set<o.Component> = new Set([this]);
 
     onload() { this.loaded = true; }
     onunload() { this.loaded = false; this.children.clear(); }
 
-    addChild<T extends o.Component>(service: T): T {
+    addChild<T extends Component>(service: T): T {
         if (!this.children.has(service)) {
             this.children.add(service);
             if (this.loaded) {

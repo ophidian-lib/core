@@ -1,7 +1,7 @@
-import { obsidian as o } from "../obsidian";
+import { Modal } from "obsidian";
 import dialogStyle from "scss:./dialog.scss";
 
-export class Dialog extends o.Modal {
+export class Dialog extends Modal {
     buttonContainerEl = this.modalEl.createDiv("modal-button-container");
     styleEl = this.modalEl.createEl("style", {text: dialogStyle});
     textContentEl = this.contentEl.createDiv("dialog-text");

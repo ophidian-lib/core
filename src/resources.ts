@@ -3,6 +3,7 @@ import { obsidian as o } from "./obsidian";
 import { Context, Useful } from "to-use";
 import { savepoint } from "./cleanups";
 import { setMap } from "./add-ons";
+import { Component } from "obsidian";
 
 /**
  * Return an opened resource of the requested type.
@@ -40,14 +41,14 @@ export function claim<T extends SharedResource<K>, K>(kind: o.Constructor<T>, ke
  * once all the active claims are released. (That is, when all of the contexts
  * that opened the resource are cleaned up).
  */
-export class SharedResource<K=string> extends o.Component {
+export class SharedResource<K=string> extends Component {
     openCount = 0;
 
     constructor(public use: Context, public resourceKey: K) {
         super();
     }
 
-    [use.factory]() {
+    "use.factory"() {
         return new ResourceMap(this.constructor as ResourceFactory<this, K>);
     }
 }
