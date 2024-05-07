@@ -5,7 +5,7 @@
  * mangles the crap out of it if you do stuff in different files.
  */
 
-import o from "obsidian";
+import * as o from "obsidian";
 
 declare module "obsidian" {
     interface Workspace {
