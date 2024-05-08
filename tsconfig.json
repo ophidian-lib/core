@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
         "target": "es2018",
-        "module": "ESNext",
+        "module": "Node16",
         "experimentalDecorators": true,
         "useDefineForClassFields": false,
+        "allowImportingTsExtensions": true,
         "newLine": "lf",
-        "moduleResolution": "node",
+        "moduleResolution": "Node16",
         "esModuleInterop": true,
         "strict": false,
         "declaration": true,

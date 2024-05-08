@@ -1,6 +1,6 @@
-import { obsidian as o } from "../obsidian";
+import { obsidian as o } from "../obsidian.ts";
 import { Useful } from "to-use";
-import { defer } from "../defer";
+import { defer } from "../defer.ts";
 
 export function statusBarItem(
     owner: o.Component & Useful,

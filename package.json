@@ -9,10 +9,13 @@
   "author": "PJ Eby",
   "license": "ISC",
   "type": "module",
-  "files": ["./dist/*"],
+  "files": [
+    "./dist/*"
+  ],
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./augments": "./src/augments.d.ts"
   },
   "sideEffects": false,
   "packageManager": "pnpm@7.33.6",

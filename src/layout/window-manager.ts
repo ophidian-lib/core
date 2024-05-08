@@ -1,8 +1,8 @@
-import { obsidian as o } from "../obsidian";
-import { Context, Service, onLoad, safeRemoveChild, app } from "../services";
-import { defer } from "../defer";
+import { obsidian as o } from "../obsidian.ts";
+import { Context, Service, onLoad, safeRemoveChild, app } from "../services.ts";
+import { defer } from "../defer.ts";
 import { around } from "monkey-around";
-import { isLeafAttached } from "./walk";
+import { isLeafAttached } from "./walk.ts";
 import { Component } from "obsidian";
 
 export type PWCFactory<C extends PerWindowComponent> = {

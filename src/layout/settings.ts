@@ -1,9 +1,9 @@
 import { around, dedupe } from "monkey-around";
-import { obsidian as o } from "../obsidian";
-import { walkLayout } from "./walk";
-import { defer } from "../defer";
-import { app, Useful, Service } from "../services";
-import { cloneValue } from "../clone-value";
+import { obsidian as o } from "../obsidian.ts";
+import { walkLayout } from "./walk.ts";
+import { defer } from "../defer.ts";
+import { app, Useful, Service } from "../services.ts";
+import { cloneValue } from "../clone-value.ts";
 
 /** An object with layout-stored settings (Workspace, WorkspaceItem, etc.) */
 interface HasLayoutSettings {

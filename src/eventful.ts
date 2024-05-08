@@ -1,5 +1,5 @@
-import { Awaiting, OptionalCleanup, Job, job, savepoint } from "./cleanups";
-import { computed, effect, untracked } from "./signify";
+import { Awaiting, OptionalCleanup, Job, job, savepoint } from "./cleanups.ts";
+import { computed, effect, untracked } from "./signify.ts";
 import type { Source, SignalKind, TalkbackKind as Upstream } from "wonka";
 export type { Source } from "wonka";
 

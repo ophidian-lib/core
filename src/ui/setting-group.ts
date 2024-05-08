@@ -1,9 +1,9 @@
 import { Setting } from "obsidian";
-import { LocalObject } from "../localStorage";
-import { obsidian as o } from "../obsidian";
-import { Service, the, app } from "../services";
-import { computed, effect, signal } from "../signify";
-import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder";
+import { LocalObject } from "../localStorage.ts";
+import { obsidian as o } from "../obsidian.ts";
+import { Service, the, app } from "../services.ts";
+import { computed, effect, signal } from "../signify.ts";
+import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder.ts";
 import groupStyle from "scss:./setting-group.scss";
 
 export function group(): SettingGroup<SettingsTabBuilder>

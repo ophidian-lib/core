@@ -1,6 +1,6 @@
-import { obsidian as o } from "./obsidian";
+import { obsidian as o } from "./obsidian.ts";
 import { Context, Useful, Key, Provides, use as _use } from "to-use";
-import { defer } from "./defer";
+import { defer } from "./defer.ts";
 import { Component } from "obsidian";
 export type * from "to-use";
 export var app: o.App;

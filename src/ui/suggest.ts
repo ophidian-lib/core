@@ -1,8 +1,8 @@
-import { obsidian as o } from "../obsidian";
-import { defer } from "../defer";
-import { deferred } from "../deferred";
+import { obsidian as o } from "../obsidian.ts";
+import { defer } from "../defer.ts";
+import { deferred } from "../deferred.ts";
 import { FuzzySuggestModal } from "obsidian";
-import { app } from "../services";
+import { app } from "../services.ts";
 
 export function modalSelect<T>(
     items: T[],

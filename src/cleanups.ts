@@ -1,5 +1,5 @@
 import { untracked } from "@preact/signals-core";
-import { defer } from "./defer";
+import { defer } from "./defer.ts";
 
 type Nothing = undefined | null | void;
 export type Cleanup = () => unknown;

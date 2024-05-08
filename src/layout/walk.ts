@@ -1,6 +1,6 @@
-import { obsidian as o } from "../obsidian";
-import { LayoutItem } from "./settings";
-import { app } from "../services";
+import { obsidian as o } from "../obsidian.ts";
+import { LayoutItem } from "./settings.ts";
+import { app } from "../services.ts";
 
 export function isLeafAttached(leaf: o.WorkspaceLeaf) {
     const ws = app.workspace, root = leaf?.getRoot();

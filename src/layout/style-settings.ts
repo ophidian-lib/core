@@ -1,6 +1,6 @@
 import { around } from "monkey-around";
-import { Service } from "../services";
-import { obsidian as o } from "../obsidian";
+import { Service, app } from "../services.ts";
+import { obsidian as o } from "../obsidian.ts";
 
 /** use() this to make your plugin support dynamic Style Settings
  *

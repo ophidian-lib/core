@@ -1,9 +1,9 @@
 import { Component, PluginSettingTab, Setting } from "obsidian";
-import { when } from "../eventful";
-import { obsidian as o } from "../obsidian";
-import { SettingsService } from "../plugin-settings";
-import { Useful, getContext, onLoad, use, app } from "../services";
-import { signal } from "../signify";
+import { when } from "../eventful.ts";
+import { obsidian as o } from "../obsidian.ts";
+import { SettingsService } from "../plugin-settings.ts";
+import { Useful, getContext, onLoad, use, app } from "../services.ts";
+import { signal } from "../signify.ts";
 
 export type Feature<T> = (ctx: T) => unknown;
 

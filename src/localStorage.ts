@@ -1,6 +1,6 @@
 import { Component } from "obsidian";
 import defaults from "defaults";
-import { app } from "./services";
+import { app } from "./services.ts";
 
 export class LocalObject<T extends {}> extends Component {
     protected defaultJSON: string;

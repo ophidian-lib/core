@@ -1,6 +1,6 @@
 import { Modal } from "obsidian";
 import dialogStyle from "scss:./dialog.scss";
-import { app } from "../services";
+import { app } from "../services.ts";
 
 export class Dialog extends Modal {
     buttonContainerEl = this.modalEl.createDiv("modal-button-container");

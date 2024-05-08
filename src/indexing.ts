@@ -1,8 +1,8 @@
-import { setMap } from "./add-ons";
-import { obsidian as o } from "./obsidian";
+import { setMap } from "./add-ons.ts";
+import { obsidian as o } from "./obsidian.ts";
 import { Component } from "obsidian";
-import { use, app } from "./services";
-import { signal } from "./signify";
+import { use, app } from "./services.ts";
+import { signal } from "./signify.ts";
 
 // reuse/recycle sets and maps instead of constantly allocating new ones
 // (we can do this because they're never directly exposed in the API, so we

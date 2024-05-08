@@ -1,8 +1,8 @@
-import { the, Service, use } from "./services";
-import { obsidian as o } from "./obsidian";
+import { the, Service } from "./services.ts";
+import { obsidian as o } from "./obsidian.ts";
 import { Context, Useful } from "to-use";
-import { savepoint } from "./cleanups";
-import { setMap } from "./add-ons";
+import { savepoint } from "./cleanups.ts";
+import { setMap } from "./add-ons.ts";
 import { Component } from "obsidian";
 
 /**

@@ -1,5 +1,5 @@
-import { deferred } from "../deferred";
-import { Dialog } from "./dialog";
+import { deferred } from "../deferred.ts";
+import { Dialog } from "./dialog.ts";
 
 export class Confirm extends Dialog {
     value: boolean = false;

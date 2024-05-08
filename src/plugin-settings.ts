@@ -1,9 +1,9 @@
 import defaults from "defaults";
-import { defer, taskQueue } from "./defer";
-import { obsidian as o } from "./obsidian";
-import { Service, Useful, getContext, onLoad } from "./services";
-import { cloneValue } from "./clone-value";
-import { computed, effect, signal } from "./signify";
+import { defer, taskQueue } from "./defer.ts";
+import { obsidian as o } from "./obsidian.ts";
+import { Service, Useful, getContext, onLoad } from "./services.ts";
+import { cloneValue } from "./clone-value.ts";
+import { computed, effect, signal } from "./signify.ts";
 
 /**
  * ### Safe, simple, and centralized setting state management

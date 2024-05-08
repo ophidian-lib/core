@@ -5,9 +5,9 @@
 
 export { untracked } from "@preact/signals-core";
 import { computed as _computed, batch, signal as _signal, effect as _effect, Signal, untracked } from "@preact/signals-core";
-import { addOn } from "./add-ons";
-import { defer } from "./defer";
-import { OptionalCleanup, savepoint } from "./cleanups";
+import { addOn } from "./add-ons.ts";
+import { defer } from "./defer.ts";
+import { OptionalCleanup, savepoint } from "./cleanups.ts";
 
 export interface Value<T> { (): T; }
 export interface Writable<T> extends Value<T> { set(v: T): void; }
