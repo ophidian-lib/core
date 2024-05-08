@@ -4,6 +4,11 @@ Note: in versions 0.0.20+, Ophidian was using a combination of @preact/signals-c
 
 So, if you're using any APIs from those modules, please see [this Github issue](https://github.com/ophidian-lib/core/issues/3) to get more details, ask questions, or report issues.
 
+### 0.0.24 (unreleased)
+
+- Use `main` to designate the main module, improving compatibility with older plugin projects that don't use `moduleResolution: node16` yet.  (Fixes an effective regression in 0.0.23)
+- Misc. code cleanups, like using the local `app` var instead of the global one, and building the project using `moduleResolution: node16`.
+
 ### 0.0.23
 
 - Ophidian is now built pre-packaged as a .js and .d.ts combination, rather than relying on directly importing .ts source files from the npm package.  This means that you no longer have to use ophidian/build in order to process its CSS or other files.
