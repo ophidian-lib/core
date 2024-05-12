@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "noImplicitThis": false
+    },
+    "extends": "../tsconfig.json",
+    "include": ["*.mts", "*.cts", "*.ts"],
+    "exclude": []
+}

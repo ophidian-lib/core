@@ -1,0 +1,68 @@
+.col-content { max-width: 45em; }
+.site-menu, .col-sidebar { margin-right: 2rem; }
+code { padding: 0; }
+
+@media (min-width: 1200px) {
+    /* Keep the menus from scrolling with the main page */
+    .page-menu, .site-menu { margin-top: -2em; padding-top: 2rem; }
+    /* Keep the right scrollbar from clashing w/central content */
+    .site-menu { padding-right: 1rem; }
+}
+
+@media (min-width: 770px) and (max-width: 1399px) {
+    /* */
+    .col-sidebar { margin-top: -2em; }
+}
+
+
+a:has(use[href$="#icon-64"]) span::after {
+    content: "()";
+}
+
+a:has(use[href$="#icon-4"]) span::after {
+    content: ".*";
+}
+
+.tsd-index-panel .tsd-index-list {
+    display: block;
+    columns: 3;
+    column-width: 10em;
+}
+
+a.tsd-index-link {
+    display: flex;
+}
+
+.tsd-page-navigation ul {
+    /* Don't indent navigation so much */
+    padding-left: 0.75rem;
+}
+
+.tsd-typography h5, .tsd-typography h6 {
+    /* Allow h5 and h6 to have a little boldness */
+    font-weight: 600;
+}
+
+.tsd-panel > h1, .tsd-panel > h2, .tsd-panel > h3 {
+    margin: 1.5rem -1.5rem 0.75rem;
+    padding: 0 1.5rem 0;
+}
+
+.tsd-member .tsd-anchor + h3.tsd-anchor-link {
+    padding: 0;
+}
+
+li.tsd-signature.tsd-anchor-link,
+.tsd-member .tsd-anchor + h3.tsd-anchor-link,
+.tsd-typography p,
+.tsd-typography ul,
+.tsd-typography ol,
+.tsd-typography h4,
+.tsd-typography h5,
+.tsd-typography h6 {
+    margin: 0 0 1em;
+}
+
+pre { margin-bottom: 1em; }
+
+code { border-radius: 0; background: none; }
