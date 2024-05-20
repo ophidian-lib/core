@@ -9,14 +9,19 @@ import { addOn } from "./add-ons.ts";
 import { defer } from "./defer.ts";
 import { OptionalCleanup, savepoint } from "./cleanups.ts";
 
+/** @category Targeted for Removal */
 export interface Value<T> { (): T; }
+
+/** @category Targeted for Removal */
 export interface Writable<T> extends Value<T> { set(v: T): void; }
 
+/** @category Targeted for Removal */
 export function computed<T>(fn: () => T): Value<T> {
     const c = _computed(fn);
     return () => c.value;
 }
 
+/** @category Targeted for Removal */
 export function signal<T>(val?: T) {
     const s = _signal(val);
     function signal() { s.value; return val; }
@@ -31,6 +36,7 @@ export function signal<T>(val?: T) {
 // Asynchronous updates
 const toUpdate = new Map<Signal<any>, any>();
 
+/** @category Targeted for Removal */
 export function tick() {
     if (!toUpdate.size) return;
     batch(() => {
@@ -45,9 +51,11 @@ export function tick() {
 type Signals<T> = Partial<{[K in keyof T]: Writable<T[K]>}>
 type Computed<T> = Partial<{[K in keyof T]: Value<T[K]>}>
 
+/** @category Targeted for Removal */
 export const signals = /* @__PURE__ */ addOn(function<T extends object>(_k: T): Signals<T> { return {} });
 
 // Must be used *without* accessor and *with* useDefineForClassFields: false
+/** @category Targeted for Removal */
 export function prop<T>(_clsOrProto: object, name: string) {
     return {
         enumerable: true,
@@ -59,6 +67,7 @@ export function prop<T>(_clsOrProto: object, name: string) {
     } as any;
 }
 
+/** @category Targeted for Removal */
 export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}) {
     const method = desc.get;
     return { ...desc, get(): T {
@@ -74,6 +83,8 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
  * This is equivalent to wrapping the method body with `return effect(() => {...}, false);`,
  * which means the method can only be called from within a running `effect()`, `@rule`, or
  * other active savepoint.
+ *
+ * @category Targeted for Removal
  */
 export function rule(_clsOrProto: object, _name: string, desc: {value?: () => unknown | (() => unknown)}): any {
     const method = desc.value;
@@ -85,6 +96,8 @@ export function rule(_clsOrProto: object, _name: string, desc: {value?: () => un
  * any currently-running effects
  *
  * This is shorthand for wrapping the method body in `return untracked(() => {...})`.
+ *
+ * @category Targeted for Removal
  */
 export function action(_clsOrProto: object, _name: string, desc: {value?: (...args: any[]) => any}): any {
     const method = desc.value;
@@ -114,6 +127,8 @@ export function action(_clsOrProto: object, _name: string, desc: {value?: (...ar
  * invoke it for effects that are started by another (running) effect, as they
  * will automatically be cleaned up when the parent effect is re-run or
  * canceled.
+ *
+ * @category Targeted for Removal
  */
 export function effect(action: () => OptionalCleanup, standalone?: boolean): () => void {
     const haveContext = savepoint.active;
@@ -144,6 +159,7 @@ export function effect(action: () => OptionalCleanup, standalone?: boolean): () 
  *
  * @returns a disposal callback for the created effect
  *
+ * @category Targeted for Removal
  */
 export function whenTrue(condition: () => any, action: () => OptionalCleanup, standalone?: boolean) {
     var active = computed(() => !!condition());

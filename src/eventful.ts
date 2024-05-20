@@ -12,6 +12,7 @@ declare module "wonka" {
 
 const Pull = 0 as Upstream.Pull, Close = 1 as Upstream.Close, Start = 0 as SignalKind.Start, End = 0 as SignalKind.End;
 
+/** @category Targeted for Removal */
 export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
 
 /**
@@ -43,6 +44,8 @@ export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
  * than providing a value, and this callback is supplied, it is invoked with the
  * error.  If this callback is not provided, the error will go unhandled or
  * become an unhandled promise rejection.
+ *
+ * @category Targeted for Removal
  */
 export function when<T>(source: Waitable<T>, sink: (value: T) => OptionalCleanup, onErr?: (e: any) => void): () => void {
     var outer = savepoint.active && savepoint.subtask(unsub), inner = new savepoint();
@@ -105,6 +108,8 @@ export function isPromiseLike<T>(obj: any): obj is PromiseLike<any> | Promise<T>
  *
  * @returns The triggered event, promise resolution, or signal value.  An error
  * is thrown if the promise rejects or the event stream is closed.
+ *
+ * @category Targeted for Removal
  */
 export function *until<T>(source: Waitable<T>): Awaiting<T> {
     var self = job(), upstream: UpstreamFn, close: () => void;

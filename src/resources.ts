@@ -14,6 +14,8 @@ import { Component } from "obsidian";
  * @param kind The {@link SharedResource} subclass you want an instance of
  * @param key The specific resource to get; you can omit this if the resource subclass has a `void` key type.
  * @param parent Optional: a context to do the lookup in. (Defaults to the Plugin object if not given.)
+ *
+ * @category Resource Management
  */
 export function claim<T extends SharedResource<K>, K>(kind: o.Constructor<T>, key: K, parent?: Partial<Useful>): T
 export function claim<T extends SharedResource<void>, K>(kind: o.Constructor<T>, key?: void, parent?: Partial<Useful>): T
@@ -40,6 +42,8 @@ export function claim<T extends SharedResource<K>, K>(kind: o.Constructor<T>, ke
  * opens are tracked so that the shared resource instance will only be unloaded
  * once all the active claims are released. (That is, when all of the contexts
  * that opened the resource are cleaned up).
+ *
+ * @category Resource Management
  */
 export class SharedResource<K=string> extends Component {
     openCount = 0;
@@ -57,6 +61,8 @@ export class SharedResource<K=string> extends Component {
  * A service that manages instances of a resource type.  An instance of this
  * is returned when you `use()` a {@link SharedResource} subclass, so you can
  * `open()` resources.
+ *
+ * @category Resource Management
  */
 export class ResourceMap<T extends SharedResource<K>, K> extends Service {
     pool = new Map<K, T>();
@@ -76,7 +82,11 @@ export class ResourceMap<T extends SharedResource<K>, K> extends Service {
     }
 }
 
-/** The static interface of SharedResource Subclasses */
+/**
+ * The static interface of SharedResource Subclasses
+ *
+ * @category Resource Management
+ */
 export type ResourceFactory<C extends SharedResource<K>, K> = {
     new (use: Context, resourceKey: K): C
 }

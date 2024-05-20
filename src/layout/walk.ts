@@ -2,6 +2,7 @@ import { obsidian as o } from "../obsidian.ts";
 import { LayoutItem } from "./settings.ts";
 import { app } from "../services.ts";
 
+/** @category Layout and Workspaces */
 export function isLeafAttached(leaf: o.WorkspaceLeaf) {
     const ws = app.workspace, root = leaf?.getRoot();
     switch (root) {
@@ -27,6 +28,8 @@ type layoutVisitor = (item: LayoutItem) => boolean | void;
  * visitor function returned true at any point in the traversal, false otherwise.
  *
  * @param visitor Callback taking a Workspace or WorkspaceItem, can return true to stop the traversal
+ *
+ * @category Layout and Workspaces
  */
 export function walkLayout(visitor: layoutVisitor): boolean;
 

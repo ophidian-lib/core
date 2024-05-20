@@ -5,6 +5,7 @@ import { around } from "monkey-around";
 import { isLeafAttached } from "./walk.ts";
 import { Component } from "obsidian";
 
+/** @category Window Management */
 export type PWCFactory<C extends PerWindowComponent> = {
     new (use: Context, item: o.WorkspaceContainer): C
     onload(use: Context): void;
@@ -34,6 +35,8 @@ export type PWCFactory<C extends PerWindowComponent> = {
  * If you want your components to be created lazily only on-demand instead of eagerly
  * and automatically, you can leave off the `.watch()` call, e.g.
  * `titleWidget = this.use(TitleWidget)` instead.
+ *
+ * @category Window Management
  */
 export class PerWindowComponent extends Component {
 
@@ -54,6 +57,8 @@ export class PerWindowComponent extends Component {
 
 /**
  * Manage per-window components
+ *
+ * @category Window Management
  */
 export class WindowManager<T extends PerWindowComponent> extends Service {
 
@@ -185,29 +190,35 @@ export class WindowManager<T extends PerWindowComponent> extends Service {
     }
 }
 
+/** @category Window Management */
 export function allContainers(): o.WorkspaceContainer[] {
     return [app.workspace.rootSplit].concat(app.workspace.floatingSplit.children);
 }
 
+/** @category Window Management */
 export function allWindows() {
     return allContainers().map(c => c.win);
 }
 
+/** @category Window Management */
 export function numWindows() {
     return 1 + (app.workspace.floatingSplit?.children.length ?? 0);
 }
 
+/** @category Window Management */
 export function windowEvent(cond: (win: Window, evt: Event) => boolean): Event {
     for (const win of allWindows()) {
         if (win.event && cond(win, win.event)) return win.event;
     }
 }
 
+/** @category Window Management */
 export function windowForDom(el: Node) {
     // Backward compat to 0.14, which has no .win on nodes; can just use el.win on 0.15.6+
     return el.win || (el.ownerDocument || <Document>el).defaultView || window;
 }
 
+/** @category Window Management */
 export function containerForWindow(win: Window): o.WorkspaceContainer {
     if (win === window) return app.workspace.rootSplit;
     const {floatingSplit} = app.workspace;
@@ -216,6 +227,7 @@ export function containerForWindow(win: Window): o.WorkspaceContainer {
     }
 }
 
+/** @category Window Management */
 export function focusedContainer(): o.WorkspaceContainer | undefined {
     return allContainers().filter(c => c.win.document.hasFocus()).pop();
 }

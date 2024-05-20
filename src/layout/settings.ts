@@ -5,14 +5,23 @@ import { defer } from "../defer.ts";
 import { app, Useful, Service } from "../services.ts";
 import { cloneValue } from "../clone-value.ts";
 
-/** An object with layout-stored settings (Workspace, WorkspaceItem, etc.) */
+/**
+ * An object with layout-stored settings (Workspace, WorkspaceItem, etc.)
+ *
+ * @category Layout and Workspaces
+ */
 interface HasLayoutSettings {
     [layoutProps]?: any
 }
 
-/** Things that can have layout-stored settings  */
+/**
+ * Things that can have layout-stored settings
+ *
+ * @category Layout and Workspaces
+ */
 export type LayoutItem = o.WorkspaceItem | o.Workspace;
 
+/** @category Layout and Workspaces */
 export class LayoutSetting<V extends any, T extends LayoutItem> {
 
     store: LayoutStorage;
@@ -60,7 +69,7 @@ export class LayoutSetting<V extends any, T extends LayoutItem> {
     }
 }
 
-
+/** @category Layout and Workspaces */
 export class LayoutStorage extends Service {
 
     get<V extends any>(from: LayoutItem, key: string, defaultValue?: V): V {

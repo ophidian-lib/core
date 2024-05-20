@@ -8,6 +8,8 @@ export const defer: (cb: () => any) => void = typeof queueMicrotask === "functio
  * a promise for the result of that callback.  The callback will not be run until after all previous callbacks
  * have run.  If no callback is supplied to the queue, the promise returned is for the most-recently-executed
  * callback.
+ *
+ * @category Targeted for Removal
  */
 export function taskQueue() {
     let last: Promise<any> = Promise.resolve();

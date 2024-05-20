@@ -6,6 +6,7 @@ type KeyDef = Hotkey | string
 
 const commands: Record<symbol, Command> = {}; //new Map;
 
+/** @category Commands and Hotkeys */
 export function command(id: string, name: string, hotkeys: KeyDef | KeyDef[] = [], cmd={}) {
 
     // Allow hotkeys to be expressed as a string, array of strings,
@@ -28,6 +29,7 @@ export function command(id: string, name: string, hotkeys: KeyDef | KeyDef[] = [
     return sym;
 }
 
+/** @category Commands and Hotkeys */
 export function addCommands<P extends Plugin>(
     plugin: P,
     cmdset: Record<symbol, (thisArg: P) => boolean | (() => any)> = plugin.constructor.prototype

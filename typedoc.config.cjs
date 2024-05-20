@@ -8,6 +8,8 @@ module.exports = {
     customCss: ["./typedoc/custom.css"],
     categorizeByGroup: false,
     categoryOrder: [
+        "*",
+        "Other"
     ],
     hideGenerator: true,
     excludeInternal: true,

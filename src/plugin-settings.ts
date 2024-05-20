@@ -47,6 +47,8 @@ import { computed, effect, signal } from "./signify.ts";
  * @param once             (Optional) A function to call with settings once, as soon as they're available
  *
  * @returns A {@link SettingsService} you can use to `.update()` the settings
+ *
+ * @category Settings Management
  */
 export function useSettings<T>(
     owner: o.Component & Partial<Useful>,
@@ -61,6 +63,7 @@ export function useSettings<T>(
     return svc;
 }
 
+/** @category Settings Management */
 export class SettingsService<T extends {}> extends Service {
     private plugin = this.use(o.Plugin);
     private queue = taskQueue();

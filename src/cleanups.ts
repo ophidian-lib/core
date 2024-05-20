@@ -2,7 +2,9 @@ import { untracked } from "@preact/signals-core";
 import { defer } from "./defer.ts";
 
 type Nothing = undefined | null | void;
+/** @category Targeted for Removal */
 export type Cleanup = () => unknown;
+/** @category Targeted for Removal */
 export type OptionalCleanup = Cleanup | Nothing;
 type PlainFunction = (this: null, ...args: any[]) => any;
 
@@ -19,6 +21,8 @@ type PlainFunction = (this: null, ...args: any[]) => any;
  * savepoint, or throw an error if there is none.  (You can use
  * `savepoint.active` to check if there is a currently active
  * savepoint, or make one active using its `.run()` method.)
+ *
+ * @category Targeted for Removal
  */
 interface savepoint extends ActiveSavePoint {
     /** Is there a currently active savepoint? */
@@ -37,6 +41,7 @@ interface savepoint extends ActiveSavePoint {
     new(action?: () => OptionalCleanup): SavePoint;
 }
 
+/** @category Targeted for Removal */
 export interface ActiveSavePoint {
     /**
      * Add zero or more cleanup callbacks to be run when the savepoint is rolled
@@ -80,6 +85,7 @@ export interface ActiveSavePoint {
     link(subtask: SavePoint, stop?: Cleanup): SavePoint
 }
 
+/** @category Targeted for Removal */
 export interface SavePoint extends ActiveSavePoint {
     /**
      * Call all the added cleanup callbacks; if any throw exceptions, they're
@@ -106,6 +112,7 @@ function getCurrent() {
     throw new Error("no savepoint is currently active");
 }
 
+/** @category Targeted for Removal */
 export let savepoint: savepoint & {
     /** @internal - used for effect scoping */
     wrapEffect(action: () => OptionalCleanup): () => OptionalCleanup
@@ -190,13 +197,13 @@ export let savepoint: savepoint & {
 }
 
 
-/** @deprecated - use `savepoint.active` instead */
+/** @deprecated - use `savepoint.active` instead @category Targeted for Removal */
 export function canCleanup() { return savepoint.active; }
 
-/** @deprecated - use `savepoint.add()` instead */
+/** @deprecated - use `savepoint.add()` instead @category Targeted for Removal */
 export function cleanup(...cleanups: OptionalCleanup[]) { savepoint.add(...cleanups); }
 
-/** @deprecated - use `new savepoint(action).rollback` */
+/** @deprecated - use `new savepoint(action).rollback` @category Targeted for Removal */
 export function withCleanup(action: () => OptionalCleanup): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: false): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: true): OptionalCleanup;
@@ -206,7 +213,10 @@ export function withCleanup(action: () => OptionalCleanup, optional?: boolean): 
 
 var currentJob: Job<any>;
 
+/** @category Targeted for Removal */
 export type JobGenerator<T=void> = Generator<void,T,any>
+
+/** @category Targeted for Removal */
 export type Awaiting<T> = Generator<void, T, any>;
 
 /**
@@ -225,6 +235,8 @@ export type Awaiting<T> = Generator<void, T, any>;
  * order to correctly infer types inside the generator function.
  *
  * @returns A new Job instance, or the current job (which may be undefined).
+ *
+ * @category Targeted for Removal
  */
 export function job<R,T>(thisObj: T, fn: (this:T) => JobGenerator<R>): Job<R>
 export function job<R>(fn: (this:void) => JobGenerator<R>): Job<R>
@@ -240,11 +252,13 @@ export function job<R>(
 
 /**
  * @deprecated Use `job(thisArg, function*(this) { ... })` instead.
+ * @category Targeted for Removal
  */
 export function spawn<T,R>(thisArg: T, gf: (this: T) => JobGenerator<R>): Job<R> {
     return job(thisArg, gf);
 }
 
+/** @category Targeted for Removal */
 export interface Job<T> extends Promise<T> {
     next(v?: any): void;
     return(v?: T): void;

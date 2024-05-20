@@ -1,6 +1,7 @@
 import { deferred } from "../deferred.ts";
 import { Dialog } from "./dialog.ts";
 
+/** @category Modals and Dialogs */
 export class Prompt extends Dialog {
     value: string | false = false;
 

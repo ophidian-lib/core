@@ -4,6 +4,7 @@ import { deferred } from "../deferred.ts";
 import { FuzzySuggestModal } from "obsidian";
 import { app } from "../services.ts";
 
+/** @category Modals and Dialogs */
 export function modalSelect<T>(
     items: T[],
     format?: (item: T) => string,

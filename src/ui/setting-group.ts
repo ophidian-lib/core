@@ -6,12 +6,14 @@ import { computed, effect, signal } from "../signify.ts";
 import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder.ts";
 import groupStyle from "scss:./setting-group.scss";
 
+/** @category Settings UI */
 export function group(): SettingGroup<SettingsTabBuilder>
 export function group<T extends FieldParent>(owner: T): SettingGroup<T>
 export function group(owner?: FieldParent) {
     return new SettingGroup(owner || useSettingsTab());
 }
 
+/** @category Settings UI */
 class SettingGroup<T extends FieldParent> extends Setting implements FieldParent {
 
     readonly detailsEl: HTMLDetailsElement;
@@ -39,6 +41,7 @@ class SettingGroup<T extends FieldParent> extends Setting implements FieldParent
     open(open=true) { this.detailsEl.open = open; return this; }
 }
 
+/** @category Settings UI */
 export function trackOpen(id: string, open=false) {
     return <T extends FieldParent>(g: SettingGroup<T>) => {
         const details = g.detailsEl, state = the(SettingGroupState);
@@ -49,6 +52,7 @@ export function trackOpen(id: string, open=false) {
 
 type GroupToggles = Record<string,boolean>;
 
+/** @category Settings UI */
 export class SettingGroupState extends Service {
     storage: LocalObject<GroupToggles> = new LocalObject(
         `${app.appId}-${this.use(o.Plugin).manifest.id}:setting-group-toggles`, {} as GroupToggles, v => this.data.set(v)

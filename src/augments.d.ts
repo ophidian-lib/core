@@ -25,6 +25,7 @@ declare module "obsidian" {
         containerEl: HTMLDivElement;
     }
     interface Component {
+        /** @internal */
         _loaded: boolean
     }
     interface App {

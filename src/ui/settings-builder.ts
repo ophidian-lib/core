@@ -5,13 +5,16 @@ import { SettingsService } from "../plugin-settings.ts";
 import { Useful, getContext, onLoad, use, app } from "../services.ts";
 import { signal } from "../signify.ts";
 
+/** @category Settings UI */
 export type Feature<T> = (ctx: T) => unknown;
 
+/** @category Settings UI */
 export function applyFeatures<T>(thing: T, ...features: Feature<T>[]) {
     if (features.length) for (const f of features) if (f) f(thing);
     return thing;
 }
 
+/** @category Settings UI */
 export function settingsBuilder(containerEl: HTMLElement = useSettingsTab().containerEl) {
     return <FieldParent>{
         containerEl: containerEl,
@@ -19,20 +22,25 @@ export function settingsBuilder(containerEl: HTMLElement = useSettingsTab().cont
         with(...features: Feature<FieldParent>[]) { return applyFeatures(this, ...features); },
     };
 }
+
+/** @category Settings UI */
 export function field(): FieldBuilder<SettingsTabBuilder>;
 export function field<T extends FieldParent>(owner: T): FieldBuilder<T>;
 export function field(owner?: FieldParent) {
     return new FieldBuilder(owner || useSettingsTab());
 }
 
+/** @category Settings UI */
 export interface SettingsProvider extends Component {
     showSettings?(component: o.Component): void
 }
 
+/** @category Settings UI */
 export function useSettingsTab(owner?: SettingsProvider & Partial<Useful>) {
     return getContext(owner)(SettingsTabBuilder).addProvider(owner) as SettingsTabBuilder;
 }
 
+/** @category Settings UI */
 export class SettingsTabBuilder extends PluginSettingTab implements Useful, FieldParent {
 
     plugin = use(o.Plugin)
@@ -74,12 +82,14 @@ export class SettingsTabBuilder extends PluginSettingTab implements Useful, Fiel
     hide()    { this.isOpen.set(false); }
 }
 
+/** @category Settings UI */
 export interface FieldParent {
     containerEl: HTMLElement
     field(parentEl?: HTMLElement): FieldBuilder<this>
     with(...features: Feature<this>[]): this
 }
 
+/** @category Settings UI */
 export class FieldBuilder<T extends FieldParent> extends Setting {
     constructor(public builder: T, parentEl = builder.containerEl ) {
         super(parentEl);

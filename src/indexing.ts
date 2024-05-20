@@ -15,6 +15,7 @@ function recordEntry(k: any, v: any) {
     ((toAdd || (toAdd = freeMaps.pop() || new Map)).get(k) || setMap(toAdd, k, freeSets.pop() || new Set)).add(v);
 }
 
+/** @category Indexing */
 export abstract class AbstactIndexer<T extends Record<string,any>, I extends object> extends Component {
     protected indices = new Map<keyof T, Map<any, Set<I>>>();
     protected version = signal(0);
@@ -135,6 +136,7 @@ export abstract class AbstactIndexer<T extends Record<string,any>, I extends obj
     }
 }
 
+/** @category Indexing */
 export abstract class NoteMetaIndexer<T extends Record<string,any>> extends AbstactIndexer<T, o.TFile> {
     use = use.service(this);
     onload() {
