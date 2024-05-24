@@ -11,7 +11,6 @@ export default defineConfig({
     dts: true,
     clean: true,
     esbuildPlugins: [
-        // sassPlugin(),
         inline({filter: /^text:/}),
         inline({filter: /^scss:/, transform(data, args) {
             return new Promise((resolve, reject) => {

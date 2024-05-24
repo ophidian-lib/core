@@ -2,7 +2,7 @@ import { Setting } from "obsidian";
 import { LocalObject } from "../localStorage.ts";
 import { obsidian as o } from "../obsidian.ts";
 import { Service, the, app } from "../services.ts";
-import { computed, effect, signal } from "../signify.ts";
+import { cached, rule, value } from "uneventful";
 import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder.ts";
 import groupStyle from "scss:./setting-group.scss";
 
@@ -45,7 +45,7 @@ class SettingGroup<T extends FieldParent> extends Setting implements FieldParent
 export function trackOpen(id: string, open=false) {
     return <T extends FieldParent>(g: SettingGroup<T>) => {
         const details = g.detailsEl, state = the(SettingGroupState);
-        effect(() => { details.open = state.get(id, open); });
+        rule(() => { details.open = state.get(id, open); });
         details.addEventListener("toggle", () => state.set(id, details.open));
     }
 }
@@ -57,8 +57,8 @@ export class SettingGroupState extends Service {
     storage: LocalObject<GroupToggles> = new LocalObject(
         `${app.appId}-${this.use(o.Plugin).manifest.id}:setting-group-toggles`, {} as GroupToggles, v => this.data.set(v)
     );
-    data = signal(this.storage.get());
+    data = value(this.storage.get());
 
-    get(key: string, dflt = false) { return computed(() => this.data()[key] ?? dflt)(); }
+    get(key: string, dflt = false) { return cached(() => this.data()[key] ?? dflt)(); }
     set(key: string, value: boolean) { return this.storage.modify(v => { v[key] = value; }); }
 }

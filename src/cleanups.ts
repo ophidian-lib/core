@@ -1,14 +1,20 @@
-import { untracked } from "@preact/signals-core";
-import { defer } from "./defer.ts";
+/**
+ * This module's original functionality is now obsoleted by uneventful; please
+ * use its APIs instead, as these will be removed entirely in Ophidian 0.1.x.
+ */
 
-type Nothing = undefined | null | void;
-/** @category Targeted for Removal */
-export type Cleanup = () => unknown;
-/** @category Targeted for Removal */
-export type OptionalCleanup = Cleanup | Nothing;
-type PlainFunction = (this: null, ...args: any[]) => any;
+import {
+    Job, Yielding, getJob, isJobActive, makeJob, start, PlainFunction, OptionalCleanup, CleanupFn,
+    detached, must,
+} from "uneventful";
+export { type Job, type OptionalCleanup } from "uneventful";
+
+/** @deprecated Use {@link CleanupFn} from uneventful instead */
+type Cleanup = CleanupFn
 
 /**
+ * @deprecated Use job APIs from uneventful instead
+ *
  * A savepoint is a way to clean up a collection of related resources
  * or undo actions taken by rules, effects, or jobs.  By adding
  * "cleanups" -- zero-argument callbacks -- to a savepoint, you can
@@ -29,6 +35,8 @@ interface savepoint extends ActiveSavePoint {
     readonly active: boolean;
 
     /**
+     * @deprecated Use {@link detached}.start(action) instead
+     *
      * Create a savepoint, optionally capturing cleanup callbacks from a
      * supplied function.
      *
@@ -41,7 +49,10 @@ interface savepoint extends ActiveSavePoint {
     new(action?: () => OptionalCleanup): SavePoint;
 }
 
-/** @category Targeted for Removal */
+/**
+ * @deprecated Use job APIs from uneventful instead
+ * @category Targeted for Removal
+ */
 export interface ActiveSavePoint {
     /**
      * Add zero or more cleanup callbacks to be run when the savepoint is rolled
@@ -85,7 +96,10 @@ export interface ActiveSavePoint {
     link(subtask: SavePoint, stop?: Cleanup): SavePoint
 }
 
-/** @category Targeted for Removal */
+/**
+ * @deprecated Use job APIs from uneventful instead
+ * @category Targeted for Removal
+ */
 export interface SavePoint extends ActiveSavePoint {
     /**
      * Call all the added cleanup callbacks; if any throw exceptions, they're
@@ -105,121 +119,71 @@ export interface SavePoint extends ActiveSavePoint {
     run<F extends PlainFunction>(fn?: F, ...args: Parameters<F>): ReturnType<F>
 }
 
-var currentSP: SavePoint;
+var wrappers = new WeakMap<Job, SavePoint>();
 
-function getCurrent() {
-    if (currentSP) return currentSP;
-    throw new Error("no savepoint is currently active");
-}
-
-/** @category Targeted for Removal */
-export let savepoint: savepoint & {
-    /** @internal - used for effect scoping */
-    wrapEffect(action: () => OptionalCleanup): () => OptionalCleanup
-} = class implements SavePoint {
-
-    constructor(action?: () => OptionalCleanup) {
-        if (action) {
-            const old = currentSP; currentSP = this;
-            try {
-                const cb = action();
-                if (cb) this.add(cb);
-            } catch (e) {
-                this.rollback();
-                throw e;
-            } finally {
-                currentSP = old;
-            }
-        }
+class spWrapper implements SavePoint {
+    constructor(public job: Job<unknown>) {
+        wrappers.set(job, this);
     }
-
-    static get active() { return !!currentSP; }
-    static add(...cleanups: OptionalCleanup[]): void;
-    static add() { getCurrent().add.apply(currentSP, arguments); }
-    static subtask(fn?: Cleanup) { return getCurrent().subtask(fn); }
-    static link(subtask: SavePoint, fn?: Cleanup) { return getCurrent().link(subtask, fn); }
-
-    static wrapEffect(action: () => OptionalCleanup): () => OptionalCleanup {
-        const sp = new this;
-        return () => {
-            const old = currentSP;
-            currentSP = sp;
-            try {
-                const cb = action();
-                if (typeof cb === "function") sp._push(cb);
-            } catch (e) {
-                sp.rollback();
-                throw e;
-            } finally {
-                currentSP = old;
-            }
-            if (!sp.isEmpty) return sp.rollback;
-        }
-    }
-
-    protected _next: DNode<Cleanup>;
-    protected _prev: DNode<Cleanup>;
-    protected _push(val: Cleanup) {
-        let node = getnode(val, this._next, this as unknown as DNode<Cleanup>);
-        if (this._next) this._next._prev = node;
-        return this._next = node;
-    }
-
-    get isEmpty() { return !this._next; }
-
-    rollback = () => {
-        while (!this.isEmpty) try { freenode(this._next)?.(); } catch (e) { Promise.reject(e); }
-    }
-
-    add(...cleanups: OptionalCleanup[]): void;
-    add() {
-        for (var i = 0; i<arguments.length; i++) {
-            var item = arguments[i];
-            if (typeof item === "function") this._push(item);
-        }
-    };
-
+    rollback = this.job.end;
     run<F extends PlainFunction>(fn?: F, ...args: Parameters<F>): ReturnType<F> {
-        const old = currentSP; currentSP = this;
-        try { return fn.apply(null, args); } catch (e) { this.rollback(); throw e; } finally { currentSP = old; }
+        return this.job.run(fn, ...args);
     }
-
-    subtask(stop?: Cleanup): SavePoint {
-        return this.link(new savepoint, stop);
-    }
-
-    link(subtask: SavePoint, stop?: Cleanup) {
+    add(...cleanups: OptionalCleanup[]): void { for (const c of cleanups) this.job.must(c); }
+    subtask(stop?: Cleanup): SavePoint { return new spWrapper(makeJob(this.job, stop)); }
+    link(subtask: SavePoint, stop?: Cleanup): SavePoint {
         stop ||= subtask.rollback;
-        var node = this._push(() => { node = null; stop(); });
-        subtask.add(() => { freenode(node); node = null; });
+        subtask.add(this.job.release(stop));
         return subtask;
     }
 }
 
+function getCurrent() {
+    const job = getJob();
+    return wrappers.get(job) || new spWrapper(job);
+}
 
-/** @deprecated - use `savepoint.active` instead @category Targeted for Removal */
-export function canCleanup() { return savepoint.active; }
+/** @deprecated Use job APIs from uneventful instead */
+export let savepoint: savepoint = class extends spWrapper {
+    constructor(action?: () => OptionalCleanup) { super(detached.start(action)); }
+    static get active() { return isJobActive(); }
+    static add(...cleanups: OptionalCleanup[]): void;
+    static add() { getCurrent().add(...arguments); }
+    static subtask(fn?: Cleanup) { return getCurrent().subtask(fn); }
+    static link(subtask: SavePoint, fn?: Cleanup) { return getCurrent().link(subtask, fn); }
+}
 
-/** @deprecated - use `savepoint.add()` instead @category Targeted for Removal */
-export function cleanup(...cleanups: OptionalCleanup[]) { savepoint.add(...cleanups); }
 
-/** @deprecated - use `new savepoint(action).rollback` @category Targeted for Removal */
+/** @deprecated Use {@link isJobActive}() instead  @category Targeted for Removal */
+export function canCleanup() { return isJobActive(); }
+
+/** @deprecated Use {@link must}()` instead  @category Targeted for Removal */
+export function cleanup(...cleanups: OptionalCleanup[]) { cleanups.forEach(must); }
+
+/** @deprecated Use {@link detached}.start(action).end instead  @category Targeted for Removal */
 export function withCleanup(action: () => OptionalCleanup): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: false): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: true): OptionalCleanup;
 export function withCleanup(action: () => OptionalCleanup, optional?: boolean): OptionalCleanup {
-    return new savepoint(action).rollback;
+    return detached.start(action).end;
 }
 
-var currentJob: Job<any>;
-
-/** @category Targeted for Removal */
+/**
+ * @deprecated Use job APIs from uneventful instead
+ * @category Targeted for Removal
+ */
 export type JobGenerator<T=void> = Generator<void,T,any>
 
-/** @category Targeted for Removal */
+/**
+ * @deprecated Use job APIs from uneventful instead
+ * @category Targeted for Removal
+ */
 export type Awaiting<T> = Generator<void, T, any>;
 
 /**
+ * @deprecated Use start(), isJobActive(), and/or getJob() from uneventful,
+ * depending on what specifically you need to do.
+ *
  * Create a new job or fetch the currently-running one
  *
  * If no arguments given, returns the current job (if any).  If one argument is
@@ -238,139 +202,25 @@ export type Awaiting<T> = Generator<void, T, any>;
  *
  * @category Targeted for Removal
  */
-export function job<R,T>(thisObj: T, fn: (this:T) => JobGenerator<R>): Job<R>
-export function job<R>(fn: (this:void) => JobGenerator<R>): Job<R>
+export function job<R,T>(thisObj: T, fn: (this:T) => Yielding<R>): Job<R>
+/** @deprecated use start() from uneventful */
+export function job<R>(fn: (this:void) => Yielding<R>): Job<R>
+/** @deprecated use getJob() from uneventful */
 export function job(): Job<unknown> | undefined
-export function job<R>(g: JobGenerator<R>): Job<R>
+/** @deprecated use start() from uneventful */
+export function job<R>(g: Yielding<R>): Job<R>
 export function job<R>(
-    g?: JobGenerator<R> | ((this:void) => JobGenerator<R>),
-    fn?: () => JobGenerator<R>
+    g?: Yielding<R> | ((this:void) => Yielding<R>),
+    fn?: () => Yielding<R>
 ): Job<R> {
-    if (typeof fn === "function") return new _Job(fn.call(g));
-    return g ? (new _Job(typeof g === "function" ? g() : g)) : currentJob;
+    if (!g && !fn) return isJobActive() ? getJob(): undefined;
+    return start(g, fn);
 }
 
 /**
- * @deprecated Use `job(thisArg, function*(this) { ... })` instead.
+ * @deprecated Use start(thisArg, function*(this) { ... })` from uneventful instead.
  * @category Targeted for Removal
  */
-export function spawn<T,R>(thisArg: T, gf: (this: T) => JobGenerator<R>): Job<R> {
+export function spawn<T,R>(thisArg: T, gf: (this: T) => Yielding<R>): Job<R> {
     return job(thisArg, gf);
-}
-
-/** @category Targeted for Removal */
-export interface Job<T> extends Promise<T> {
-    next(v?: any): void;
-    return(v?: T): void;
-    throw(e: any): void;
-
-    /** Run a cleanup function when the job ends */
-    cleanup(f: Cleanup): void;
-}
-
-const IS_RUNNING = 1, IS_FINISHED = 2, IS_ERROR = 4 | IS_FINISHED, WAS_PROMISED = 8;
-
-class _Job<T> implements Job<T> {
-
-    // pretend to be a promise
-    declare [Symbol.toStringTag]: string;
-
-    constructor(protected g: JobGenerator<T>) {
-        this.savepoint.add(() => {
-            // Check for untrapped error, promote to unhandled rejection
-            if ((this._flags & (IS_ERROR | WAS_PROMISED)) === IS_ERROR) {
-                Promise.reject(this._result);
-            }
-        })
-        // Start asynchronously
-        defer(() => { this._flags &= ~IS_RUNNING; this.next(); });
-    }
-
-    then<T1=T, T2=never>(
-        onfulfilled?: (value: T) => T1 | PromiseLike<T1>,
-        onrejected?: (reason: any) => T2 | PromiseLike<T2>
-    ): Promise<T1 | T2> {
-        this._flags |= WAS_PROMISED;
-        return new Promise((res, rej) => this.cleanup(() => {
-            if ((this._flags & IS_ERROR) === IS_ERROR) rej(this._result); else res(this._result);
-        })).then(onfulfilled, onrejected);
-    }
-
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
-        return this.then(undefined, onrejected);
-    }
-
-    finally(onfinally?: () => void): Promise<T> { return this.then().finally(onfinally); }
-
-    next(v?: any)   { if (this.g) this._step("next",   v); }
-    return(v?: T)   { if (this.g) this._step("return", v); }
-    throw(e: any)   { if (this.g) this._step("throw",  e); }
-
-
-    cleanup(f: Cleanup) {
-        // Already closed?  Defer it to run anyway
-        if (!this.g) defer(f); else this.savepoint.add(f);
-    }
-
-    // === Internals === //
-
-    protected readonly savepoint = savepoint.subtask(this.return.bind(this, undefined));
-    protected _flags = IS_RUNNING;
-    protected _result: any
-
-    protected _step(method: "next" | "throw" | "return", arg: any) {
-        // Don't resume a job while it's running
-        if (this._flags & IS_RUNNING) return defer(this._step.bind(this, method, arg));
-        const oldSP = currentSP;
-        try {
-            this._flags |= IS_RUNNING;
-            currentJob = this;
-            currentSP = this.savepoint;
-            try {
-                const res: IteratorResult<any, T> = untracked(this.g[method].bind(this.g, arg));
-                if (!res.done) return;
-                this._result = res.value;
-                this._flags |= IS_FINISHED;
-            } catch(e) {
-                this._result = e;
-                this._flags |= IS_ERROR
-            }
-            // Generator returned or threw: ditch it and run cleanups
-            this.g = undefined;
-            this.savepoint.rollback();
-        } finally {
-            currentJob = undefined;
-            currentSP = oldSP;
-            this._flags &= ~IS_RUNNING;
-        }
-    }
-}
-
-
-type DNode<T> = { _next: DNode<T>, _prev: DNode<T>, _data: T}
-
-function getnode<T>(data: T, next: DNode<T>, prev: DNode<T>): DNode<T> {
-    if (freelist) {
-        let node = freelist;
-        freelist = node._next;
-        node._next = next;
-        node._prev = prev;
-        node._data = data;
-        return node;
-    }
-    return {_next: next, _prev: prev, _data: data}
-}
-
-var freelist: DNode<any>;
-
-function freenode<T>(node: DNode<T>): T {
-    if (node) {
-        let data = node._data;
-        if (node._next) node._next._prev = node._prev;
-        if (node._prev) node._prev._next = node._next;
-        node._next = freelist;
-        freelist = node;
-        node._prev = node._data = undefined;
-        return data;
-    }
 }

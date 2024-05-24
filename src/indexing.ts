@@ -2,7 +2,7 @@ import { setMap } from "./add-ons.ts";
 import { obsidian as o } from "./obsidian.ts";
 import { Component } from "obsidian";
 import { use, app } from "./services.ts";
-import { signal } from "./signify.ts";
+import { value } from "uneventful";
 
 // reuse/recycle sets and maps instead of constantly allocating new ones
 // (we can do this because they're never directly exposed in the API, so we
@@ -18,7 +18,7 @@ function recordEntry(k: any, v: any) {
 /** @category Indexing */
 export abstract class AbstactIndexer<T extends Record<string,any>, I extends object> extends Component {
     protected indices = new Map<keyof T, Map<any, Set<I>>>();
-    protected version = signal(0);
+    protected version = value(0);
     protected history = new WeakMap<I,Map<keyof T,Set<any>>>();
 
     /**

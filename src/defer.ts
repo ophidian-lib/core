@@ -1,5 +1,4 @@
-/** Invoke a no-argument function as a microtask, using queueMicrotask or Promise.resolve().then() */
-export const defer: (cb: () => any) => void = typeof queueMicrotask === "function" ? queueMicrotask : (p => (cb: () => any) => p.then(cb))(Promise.resolve());
+export { defer } from "uneventful";
 
 /**
  * Return a queuing function that invokes callbacks serially, returning a promise for the task's completion

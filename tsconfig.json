@@ -16,6 +16,6 @@
     },
     // Keep VSCode, tsc, typedoc, tsup, etc. from treating any output .ts files
     // as part of their input:
-    "include": ["src/**/*.ts"],
+    "include": ["src/**/*.ts", "tsup.config.ts"],
     "exclude": ["src/drafts/**"]
 }

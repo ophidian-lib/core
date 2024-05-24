@@ -1,9 +1,8 @@
 import { Component, PluginSettingTab, Setting } from "obsidian";
-import { when } from "../eventful.ts";
 import { obsidian as o } from "../obsidian.ts";
 import { SettingsService } from "../plugin-settings.ts";
 import { Useful, getContext, onLoad, use, app } from "../services.ts";
-import { signal } from "../signify.ts";
+import { detached, must, peek, rule, value } from "uneventful";
 
 /** @category Settings UI */
 export type Feature<T> = (ctx: T) => unknown;
@@ -46,20 +45,23 @@ export class SettingsTabBuilder extends PluginSettingTab implements Useful, Fiel
     plugin = use(o.Plugin)
     use = use.this;
 
-    isOpen = signal(false);
+    isOpen = value(false);
     providers: SettingsProvider[] = []
 
     constructor() {
         super(app, use(o.Plugin));
-        this.plugin.register(use(SettingsService).once(() => {
-            onLoad(this.plugin, () => this.plugin.addSettingTab(this));
-        }))
-        this.plugin.register(when(this.isOpen, () => {
-            const c = new o.Component;
-            c.load();
-            this.providers.forEach(p => p._loaded && p.showSettings(c));
-            return () => { c.unload(); this.clear(); }
-        }));
+        this.plugin.register(detached.start(() => {
+            must(use(SettingsService).once(() => {
+                onLoad(this.plugin, () => this.plugin.addSettingTab(this));
+            }));
+            rule(() => {
+                if (!this.isOpen()) return;
+                const c = new o.Component;
+                c.load();
+                peek(() => this.providers.forEach(p => p._loaded && p.showSettings(c)));
+                return () => { c.unload(); this.clear(); }
+            });
+        }).end);
     }
 
     with(...features: Feature<this>[]) { return applyFeatures(this, ...features); }

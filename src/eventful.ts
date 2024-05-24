@@ -1,21 +1,17 @@
-import { Awaiting, OptionalCleanup, Job, job, savepoint } from "./cleanups.ts";
-import { computed, effect, untracked } from "./signify.ts";
-import type { Source, SignalKind, TalkbackKind as Upstream } from "wonka";
-export type { Source } from "wonka";
-
-type UpstreamFn = (signal: Upstream) => void;
-
-declare module "wonka" {
-    enum SignalKind { Start = 0, Push = 1, End = 0 }
-    enum TalkbackKind { Pull = 0, Close = 1 }
-}
-
-const Pull = 0 as Upstream.Pull, Close = 1 as Upstream.Close, Start = 0 as SignalKind.Start, End = 0 as SignalKind.End;
-
-/** @category Targeted for Removal */
-export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
+import { OptionalCleanup, Stream, cached, forEach, fromPromise, must, until as _until, to, Yielding, next, isJobActive, detached } from "uneventful";
 
 /**
+ * @deprecated Use `Stream` from uneventful.
+ * @category Targeted for Removal
+ */
+export type Source<T> = Stream<T>;
+
+/** @category Targeted for Removal */
+export type Waitable<T> = (() => T) | Stream<T> | Promise<T> | PromiseLike<T>
+
+/**
+ * @deprecated - Use forEach() from uneventful (possibly w/fromPromise and if{})
+ *
  * Subscribe a callback (in a cancelable way) to run whenever the given data
  * source provides a value.  A cancellation function is returned and also
  * registered in the current savepoint, if any.  The callback is run with
@@ -28,7 +24,7 @@ export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
  * - A signal, or a zero-argument function returning a value based on signals
  *   (In which case the callback will only be called for truthy values, and is
  *   run as an untracked action.)
- * - A wonka event source
+ * - An uneventful Stream
  * - A promise, or promise-like object with a `.then()` method
  *
  * @param sink A callback that will receive values from the source.  The
@@ -48,47 +44,18 @@ export type Waitable<T> = (() => T) | Source<T> | Promise<T> | PromiseLike<T>
  * @category Targeted for Removal
  */
 export function when<T>(source: Waitable<T>, sink: (value: T) => OptionalCleanup, onErr?: (e: any) => void): () => void {
-    var outer = savepoint.active && savepoint.subtask(unsub), inner = new savepoint();
-    var ended = false;
-    var upstream: UpstreamFn;
+    if (!isJobActive()) return detached.bind(when)(source, sink, onErr);
     if (isPromiseLike<T>(source)) {
-        const sendFinal = <T>(fn: (v: T) => any) => (val: T) => {
-            if (ended || !fn) return;
-            inner.add(inner.run(fn, val));
-            inner.rollback();
-        }
-        (source as PromiseLike<T>).then(sendFinal(sink), sendFinal(onErr));
-        return unsub;
+        source = fromPromise(source)
     } else if (typeof source !== "function") {
         throw new TypeError("Not a source, signal, or promise");
-    } else if (!source.length) {
-        const cond = computed(source as () => T)
-        return effect(() => {
-            var res: T;
-            if (res = cond()) savepoint.add(untracked(sink.bind(null, res)));
-        })
     }
-    (source as Source<T>)(signal => {
-        if (signal === End) {
-            upstream = undefined;
-            unsub();
-        } else if (signal.tag === Start) {
-            (upstream = signal[0])(Pull);
-        } else if (!ended) {
-            inner.rollback();
-            inner.add(inner.run(sink, signal[0]));
-            if (upstream) upstream(Pull);
-        }
-    });
-    return unsub;
-    function unsub() {
-        if (!ended) {
-            inner.rollback();
-            if (outer) outer.rollback();
-            ended = true;
-            if (upstream) upstream(Close);
-        }
-    }
+    const job = source.length ?
+        forEach(source as Stream<T>, sink) :
+        forEach(cached(source as () => T), v => v && must(sink(v)))
+    ;
+    if (onErr) job.onError(onErr);
+    return job.end;
 }
 
 export function isPromiseLike<T>(obj: any): obj is PromiseLike<any> | Promise<T> {
@@ -96,47 +63,29 @@ export function isPromiseLike<T>(obj: any): obj is PromiseLike<any> | Promise<T>
 }
 
 /**
+ * @deprecated use until(), next(), or to() from uneventful
+ *
  * Wait for and return next value from a source (or error if stream source
- * closes).  Must be invoked using `yield *until()` within a {@link Job}.
+ * closes).  Must be invoked using `yield *until()` within a Job.
  *
  * @param source A {@link Waitable} data source, which can be any of:
  * - A signal, or a zero-argument function returning a value based on signals
  *   (In which case the job will resume when the value is truthy - perhaps
  *   immediately!)
- * - A wonka event source
+ * - An uneventful Stream
  * - A promise, or promise-like object with a `.then()` method
  *
- * @returns The triggered event, promise resolution, or signal value.  An error
- * is thrown if the promise rejects or the event stream is closed.
+ * @returns (after yield*) The triggered event, promise resolution, or signal
+ * value.  An error is thrown if the promise rejects, or the event stream
+ * closes or errors out before a new value is produced.
  *
  * @category Targeted for Removal
  */
-export function *until<T>(source: Waitable<T>): Awaiting<T> {
-    var self = job(), upstream: UpstreamFn, close: () => void;
-    if (isPromiseLike<T>(source)) {
-        (source as PromiseLike<T>).then(v => self?.next(v), e => self?.throw(e));
-    } else if (typeof source === "function") {
-        if (!source.length) {
-            var cond = computed(source as () => T), res = untracked(cond);
-            if (res) return res; else close = effect(() => {
-                if (self && (res = cond())) self.next(res);
-            });
-        } else {
-            close = function () { self = null; if (upstream) upstream(Close); upstream = null; }
-            source(signal => {
-                if (signal === End) {
-                    self?.throw(new Error("Stream ended"));
-                    close();
-                } else if (signal.tag === Start) {
-                    (upstream = signal[0])(Pull);
-                } else {
-                    self?.next(signal[0]);
-                    close();
-                }
-            });
-        }
+export function until<T>(source: Waitable<T>): Yielding<T> {
+    if (isPromiseLike<T>(source)) return to(source);
+    if (typeof source === "function") {
+        return source.length ? next(source as Stream<T>) : _until(source);
     } else {
         throw new TypeError("Not a source, signal, or promise");
     }
-    try { return yield; } finally { self = undefined; close && close(); }
 }

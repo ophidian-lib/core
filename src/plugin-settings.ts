@@ -1,9 +1,9 @@
 import defaults from "defaults";
-import { defer, taskQueue } from "./defer.ts";
+import { taskQueue } from "./defer.ts";
 import { obsidian as o } from "./obsidian.ts";
 import { Service, Useful, getContext, onLoad } from "./services.ts";
 import { cloneValue } from "./clone-value.ts";
-import { computed, effect, signal } from "./signify.ts";
+import { cached, detached, peek, rule, value } from "uneventful";
 
 /**
  * ### Safe, simple, and centralized setting state management
@@ -68,8 +68,8 @@ export class SettingsService<T extends {}> extends Service {
     private plugin = this.use(o.Plugin);
     private queue = taskQueue();
     private data = {} as T;
-    private version = signal(0);
-    get = computed(() => this.version() ? cloneValue(this.data) : null)
+    private version = value(0);
+    get = cached(() => this.version() ? cloneValue(this.data) : null)
 
     get current() { return this.get(); }
 
@@ -97,8 +97,8 @@ export class SettingsService<T extends {}> extends Service {
     }
 
     each(callback: (settings: T) => any, ctx?: any): () => void {
-        return effect(() => {
-            if (this.current) defer(callback.bind(ctx, this.current));
+        return detached.bind(rule)(() => {
+            if (this.current) peek(callback.bind(ctx, this.current));
         });
     }
 

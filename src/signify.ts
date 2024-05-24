@@ -1,55 +1,51 @@
 /**
- * Wrap preact signals to use @maverick-js/signals API style, w/always-async
- * side effects, nested effect() support, and aSignal()/aSignal.set(value) interface.
+ * Wrap uneventful signals API to match the old ophidian API, plus some (experimental) decorators
  */
 
-export { untracked } from "@preact/signals-core";
-import { computed as _computed, batch, signal as _signal, effect as _effect, Signal, untracked } from "@preact/signals-core";
 import { addOn } from "./add-ons.ts";
-import { defer } from "./defer.ts";
-import { OptionalCleanup, savepoint } from "./cleanups.ts";
+import {
+    getJob, rule as _rule, isJobActive, detached, peek, Signal, cached, value, OptionalCleanup, runRules, Configurable,
+    action as _action
+} from "uneventful";
 
-/** @category Targeted for Removal */
-export interface Value<T> { (): T; }
+/**
+ * @deprecated Use Signal from uneventful
+ * @category Targeted for Removal
+ */
+export type Value<T> = Signal<T>;
 
-/** @category Targeted for Removal */
-export interface Writable<T> extends Value<T> { set(v: T): void; }
+/**
+ * @deprecated Use Configurable from uneventful
+ * @category Targeted for Removal
+ */
+export type Writable<T> = Configurable<T>;
 
-/** @category Targeted for Removal */
-export function computed<T>(fn: () => T): Value<T> {
-    const c = _computed(fn);
-    return () => c.value;
-}
+/**
+ * @deprecated Use cached from uneventful
+ * @category Targeted for Removal
+ */
+export const computed = cached;
 
-/** @category Targeted for Removal */
-export function signal<T>(val?: T) {
-    const s = _signal(val);
-    function signal() { s.value; return val; }
-    (signal as Writable<T>).set = function(v: T) {
-        if (val === v) return;  // ignore no-op sets
-        if (!toUpdate.size) defer(tick); // schedule atomic update to run effects
-        toUpdate.set(s, val = v); // cache update for immediate read
-    }
-    return signal as Writable<T>
-}
+/**
+ * @deprecated Use value from uneventful
+ * @category Targeted for Removal
+ */
+export const signal = value;
 
-// Asynchronous updates
-const toUpdate = new Map<Signal<any>, any>();
+/**
+ * @deprecated Use runRules from uneventful
+ * @category Targeted for Removal
+ */
+export const tick = runRules;
 
-/** @category Targeted for Removal */
-export function tick() {
-    if (!toUpdate.size) return;
-    batch(() => {
-        for (const [s, v] of toUpdate.entries()) {
-            toUpdate.delete(s);
-            s.value = v;
-        }
-    });
-}
+/**
+ * @deprecated Use peek() from uneventful
+ * @category Targeted for Removal
+ */
+export const untracked = peek;
 
-
-type Signals<T> = Partial<{[K in keyof T]: Writable<T[K]>}>
-type Computed<T> = Partial<{[K in keyof T]: Value<T[K]>}>
+type Signals<T> = Partial<{[K in keyof T]: Configurable<T[K]>}>
+type Computed<T> = Partial<{[K in keyof T]: Signal<T[K]>}>
 
 /** @category Targeted for Removal */
 export const signals = /* @__PURE__ */ addOn(function<T extends object>(_k: T): Signals<T> { return {} });
@@ -78,20 +74,21 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
 }
 
 /**
+ * @deprecated Use `@rule.method` from uneventful
+ *
  * Decorator to make a method into a child effect
  *
  * This is equivalent to wrapping the method body with `return effect(() => {...}, false);`,
  * which means the method can only be called from within a running `effect()`, `@rule`, or
- * other active savepoint.
+ * other active job.
  *
  * @category Targeted for Removal
  */
-export function rule(_clsOrProto: object, _name: string, desc: {value?: () => unknown | (() => unknown)}): any {
-    const method = desc.value;
-    return {...desc, value() { return effect(method.bind(this), false);}}
-}
+export const rule = _rule.method;
 
 /**
+ * @deprecated Use `@action` from uneventful
+ *
  * Decorator to make a method perform an action without creating dependencies for
  * any currently-running effects
  *
@@ -99,12 +96,11 @@ export function rule(_clsOrProto: object, _name: string, desc: {value?: () => un
  *
  * @category Targeted for Removal
  */
-export function action(_clsOrProto: object, _name: string, desc: {value?: (...args: any[]) => any}): any {
-    const method = desc.value;
-    return {...desc, value(...args) { return untracked(method.bind(this, ...args)); }};
-}
+export const action = _action;
 
 /**
+ * @deprecated Use rule(fn) from uneventful.  (For "standalone" rules, use `detached.run(rule, fn)`.)
+ *
  * Register a callback that will run repeatedly in response to changes
  *
  * @param action The function to run: it will be invoked once immediately
@@ -131,16 +127,15 @@ export function action(_clsOrProto: object, _name: string, desc: {value?: (...ar
  * @category Targeted for Removal
  */
 export function effect(action: () => OptionalCleanup, standalone?: boolean): () => void {
-    const haveContext = savepoint.active;
-    if (standalone === false && !haveContext) throw new Error(
-        "Must be called from within another effect or @rule"
-    );
-    const cb = _effect(savepoint.wrapEffect(action));
-    if (haveContext && standalone !== true) savepoint.add(cb);
-    return cb;
+    if (standalone === false) getJob();  // throw if not standalone
+    if (standalone === true || !isJobActive()) return detached.bind(_rule)(action);
+    return _rule(action);
 }
 
 /**
+ * @deprecated use rule.if from uneventful, or `detached.run(() => rule.if(cond, action))` for
+ * a "standalone" whenTrue.
+ *
  * Create an effect tied to a boolean condition
  *
  * This is similar to writing `effect(() => { if (condition()) return action(); })`,
@@ -162,6 +157,6 @@ export function effect(action: () => OptionalCleanup, standalone?: boolean): () 
  * @category Targeted for Removal
  */
 export function whenTrue(condition: () => any, action: () => OptionalCleanup, standalone?: boolean) {
-    var active = computed(() => !!condition());
+    var active = cached(() => !!condition());
     return effect(() => active() ? action() : undefined, standalone);
 }
