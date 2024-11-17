@@ -9,6 +9,7 @@
         "moduleResolution": "Node16",
         "esModuleInterop": true,
         "strict": false,
+        "strictBindCallApply": true,
         "declaration": true,
         "emitDeclarationOnly": true,
         "outDir": "dist",

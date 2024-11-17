@@ -54,8 +54,8 @@ export class LayoutSetting<V extends any, T extends LayoutItem> {
     onSet(callback: (
         on: LayoutItem, value?: V, old?: V) => any, ctx?: any
     ): o.EventRef {
-        if (this.owner) return this.store.onSet(this.key, (on, val, old) => {
-            if (on === this.owner) callback.call(ctx, val, old);
+        if (this.owner) return this.store.onSet<V>(this.key, (on, val, old) => {
+            if (on === this.owner) callback.call(ctx, on, val, old);
         });
         return this.store.onSet(this.key, callback, ctx);
     }
