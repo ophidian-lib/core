@@ -2,7 +2,7 @@ import { setMap } from "./add-ons.ts";
 import { obsidian as o } from "./obsidian.ts";
 import { Component } from "obsidian";
 import { use, app } from "./services.ts";
-import { value } from "uneventful";
+import { value } from "uneventful/signals";
 
 // reuse/recycle sets and maps instead of constantly allocating new ones
 // (we can do this because they're never directly exposed in the API, so we

@@ -3,7 +3,8 @@ import { taskQueue } from "./defer.ts";
 import { obsidian as o } from "./obsidian.ts";
 import { Service, Useful, getContext, onLoad } from "./services.ts";
 import { cloneValue } from "./clone-value.ts";
-import { cached, detached, peek, rule, value } from "uneventful";
+import { detached } from "uneventful";
+import { cached, peek, rule, value } from "uneventful/signals";
 
 /**
  * ### Safe, simple, and centralized setting state management
@@ -102,7 +103,7 @@ export class SettingsService<T extends {}> extends Service {
         });
     }
 
-    /** @deprecated Use each() instead */
+    /** @deprecated Use .each() instead */
     onChange(callback: (settings: T) => any, ctx?: any): () => void {
         return this.each(callback, ctx);
     }

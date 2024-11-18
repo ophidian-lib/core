@@ -138,19 +138,16 @@ class spWrapper implements SavePoint {
     }
 }
 
-function getCurrent() {
-    const job = getJob();
-    return wrappers.get(job) || new spWrapper(job);
-}
-
 /** @deprecated Use job APIs from uneventful instead */
 export let savepoint: savepoint = class extends spWrapper {
     constructor(action?: () => OptionalCleanup) { super(detached.start(action)); }
     static get active() { return isJobActive(); }
-    static add(...cleanups: OptionalCleanup[]): void;
-    static add() { getCurrent().add(...arguments); }
-    static subtask(fn?: Cleanup) { return getCurrent().subtask(fn); }
-    static link(subtask: SavePoint, fn?: Cleanup) { return getCurrent().link(subtask, fn); }
+    static add(...cleanups: OptionalCleanup[]): void { cleanups.forEach(must); }
+    static subtask(fn?: Cleanup) { return new spWrapper(fn ? makeJob(undefined, fn) : start()); }
+    static link(subtask: SavePoint, stop: Cleanup = subtask.rollback) {
+        subtask.add(getJob().release(stop));
+        return subtask;
+    }
 }
 
 
@@ -181,8 +178,7 @@ export type JobGenerator<T=void> = Generator<void,T,any>
 export type Awaiting<T> = Generator<void, T, any>;
 
 /**
- * @deprecated Use start(), isJobActive(), and/or getJob() from uneventful,
- * depending on what specifically you need to do.
+ * @deprecated Use start() from uneventful
  *
  * Create a new job or fetch the currently-running one
  *
@@ -205,16 +201,13 @@ export type Awaiting<T> = Generator<void, T, any>;
 export function job<R,T>(thisObj: T, fn: (this:T) => Yielding<R>): Job<R>
 /** @deprecated use start() from uneventful */
 export function job<R>(fn: (this:void) => Yielding<R>): Job<R>
-/** @deprecated use getJob() from uneventful */
-export function job(): Job<unknown> | undefined
 /** @deprecated use start() from uneventful */
 export function job<R>(g: Yielding<R>): Job<R>
 export function job<R>(
     g?: Yielding<R> | ((this:void) => Yielding<R>),
     fn?: () => Yielding<R>
 ): Job<R> {
-    if (!g && !fn) return isJobActive() ? getJob(): undefined;
-    return start(g, fn);
+    if (g || fn) return start(g, fn);
 }
 
 /**
@@ -222,5 +215,5 @@ export function job<R>(
  * @category Targeted for Removal
  */
 export function spawn<T,R>(thisArg: T, gf: (this: T) => Yielding<R>): Job<R> {
-    return job(thisArg, gf);
+    return start(thisArg, gf);
 }

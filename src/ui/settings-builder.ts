@@ -2,7 +2,8 @@ import { Component, PluginSettingTab, Setting } from "obsidian";
 import { obsidian as o } from "../obsidian.ts";
 import { SettingsService } from "../plugin-settings.ts";
 import { Useful, getContext, onLoad, use, app } from "../services.ts";
-import { detached, must, peek, rule, value } from "uneventful";
+import { detached, must } from "uneventful";
+import { peek, rule, value } from "uneventful/signals"
 
 /** @category Settings UI */
 export type Feature<T> = (ctx: T) => unknown;

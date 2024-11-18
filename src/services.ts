@@ -103,7 +103,10 @@ export function safeRemoveChild(parent: o.Component, child: o.Component) {
 }
 
 /**
- * Invoke a callback when a given component loads
+ * Invoke a callback when a given component loads.
+ *
+ * (Note: If the component is already loaded, the callback will be run before the
+ * call to this function returns.)
  *
  * @category Components and Services
  */

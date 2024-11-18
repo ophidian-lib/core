@@ -3,7 +3,7 @@
 ### 0.0.25 (unreleased)
 
 - Fixed: `LayoutSetting.onSet()` was passing the wrong arguments to its callback when setting was tied to a specific layout item (via `.of()` or at construction time). If you were relying on this behavior, you may need to add an extra (ignored) initial argument to your callback.
-- As of this version, [Uneventful](https://uneventful.js.org/) 0.0.5 is required as a peerDependency, and the old preact/wonka code has been removed.
+- As of this version, [Uneventful](https://uneventful.js.org/) 0.0.9 is required as a peerDependency, and the old preact/wonka code has been removed.
 
   Note: in versions 0.0.20 - 0.0.24, Ophidian was using a combination of @preact/signals-core, Wonka.js, and a lot of custom code to do the things that it now uses Uneventful for.  If you were *directly* using anything exported from the `src/signify.ts`, `src/eventful.ts`, or `src/cleanups.ts` modules, please be aware that they are now almost all deprecated in favor of Uneventful's equivalent APIs.  Future versions in the 0.0.x range will include backward-compatible wrappers for the bits that don't involve Wonka.js (for which no backward-compatibility will be provided), but from version 0.1.0 on those will be gone.
 

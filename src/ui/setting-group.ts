@@ -2,7 +2,7 @@ import { Setting } from "obsidian";
 import { LocalObject } from "../localStorage.ts";
 import { obsidian as o } from "../obsidian.ts";
 import { Service, the, app } from "../services.ts";
-import { cached, rule, value } from "uneventful";
+import { cached, rule, value } from "uneventful/signals";
 import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder.ts";
 import groupStyle from "scss:./setting-group.scss";
 

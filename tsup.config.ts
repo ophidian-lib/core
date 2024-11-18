@@ -10,6 +10,7 @@ export default defineConfig({
     treeshake: true,
     dts: true,
     clean: true,
+    external: ["uneventful"],
     esbuildPlugins: [
         inline({filter: /^text:/}),
         inline({filter: /^scss:/, transform(data, args) {

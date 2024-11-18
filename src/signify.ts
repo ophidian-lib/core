@@ -3,43 +3,41 @@
  */
 
 import { addOn } from "./add-ons.ts";
-import {
-    getJob, rule as _rule, isJobActive, detached, peek, Signal, cached, value, OptionalCleanup, runRules, Configurable,
-    action as _action
-} from "uneventful";
+import { rule as _rule, peek, Signal, cached, value,runRules, Configurable, action as _action, GenericMethodDecorator } from "uneventful/signals";
+import { isJobActive, OptionalCleanup } from "uneventful"
 
 /**
- * @deprecated Use Signal from uneventful
+ * @deprecated Use Signal from uneventful/signals
  * @category Targeted for Removal
  */
 export type Value<T> = Signal<T>;
 
 /**
- * @deprecated Use Configurable from uneventful
+ * @deprecated Use Configurable from uneventful/signals
  * @category Targeted for Removal
  */
 export type Writable<T> = Configurable<T>;
 
 /**
- * @deprecated Use cached from uneventful
+ * @deprecated Use cached from uneventful/signals
  * @category Targeted for Removal
  */
 export const computed = cached;
 
 /**
- * @deprecated Use value from uneventful
+ * @deprecated Use value from uneventful/signals
  * @category Targeted for Removal
  */
 export const signal = value;
 
 /**
- * @deprecated Use runRules from uneventful
+ * @deprecated Use runRules from uneventful/signals
  * @category Targeted for Removal
  */
 export const tick = runRules;
 
 /**
- * @deprecated Use peek() from uneventful
+ * @deprecated Use peek() from uneventful/signals
  * @category Targeted for Removal
  */
 export const untracked = peek;
@@ -74,7 +72,7 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
 }
 
 /**
- * @deprecated Use `@rule.method` from uneventful
+ * @deprecated Use `@rule.method` from uneventful/signals
  *
  * Decorator to make a method into a child effect
  *
@@ -84,10 +82,10 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
  *
  * @category Targeted for Removal
  */
-export const rule = _rule.method;
+export const rule: GenericMethodDecorator<((...args: any[]) => OptionalCleanup)> = _rule.method;
 
 /**
- * @deprecated Use `@action` from uneventful
+ * @deprecated Use `@action` from uneventful/signals
  *
  * Decorator to make a method perform an action without creating dependencies for
  * any currently-running effects
@@ -99,7 +97,7 @@ export const rule = _rule.method;
 export const action = _action;
 
 /**
- * @deprecated Use rule(fn) from uneventful.  (For "standalone" rules, use `detached.run(rule, fn)`.)
+ * @deprecated Use rule(fn) from uneventful/signals.  (For "standalone" rules, use `rule.detached(fn)`.)
  *
  * Register a callback that will run repeatedly in response to changes
  *
@@ -127,13 +125,14 @@ export const action = _action;
  * @category Targeted for Removal
  */
 export function effect(action: () => OptionalCleanup, standalone?: boolean): () => void {
-    if (standalone === false) getJob();  // throw if not standalone
-    if (standalone === true || !isJobActive()) return detached.bind(_rule)(action);
+    if (standalone !== false) {
+        if (standalone === true || !isJobActive()) return _rule.detached(action);
+    }
     return _rule(action);
 }
 
 /**
- * @deprecated use rule.if from uneventful, or `detached.run(() => rule.if(cond, action))` for
+ * @deprecated use rule.if from uneventful/signals, or `detached.run(() => rule.if(cond, action))` for
  * a "standalone" whenTrue.
  *
  * Create an effect tied to a boolean condition

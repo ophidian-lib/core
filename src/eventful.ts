@@ -1,4 +1,5 @@
-import { OptionalCleanup, Stream, cached, forEach, fromPromise, must, until as _until, to, Yielding, next, isJobActive, detached } from "uneventful";
+import { OptionalCleanup, Stream, forEach, fromPromise, must, to, Yielding, next, isJobActive, detached } from "uneventful";
+import { cached, until as _until } from "uneventful/signals"
 
 /**
  * @deprecated Use `Stream` from uneventful.

@@ -37,10 +37,10 @@
     "tsx": "^4.10.0",
     "typedoc": "^0.25.13",
     "typescript": "5.2.2",
-    "uneventful": "^0.0.5"
+    "uneventful": "^0.0.9"
   },
   "peerDependencies": {
-    "uneventful": "^0.0.5"
+    "uneventful": "^0.0.9"
   },
   "scripts": {
     "docs": "tsx typedoc/run.mts",
