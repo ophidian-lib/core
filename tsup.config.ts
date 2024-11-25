@@ -8,8 +8,10 @@ export default defineConfig({
     sourcemap: true,
     format: ["esm"],
     treeshake: true,
-    dts: true,
-    clean: true,
+    dts: {
+        entry: "src/index.ts",
+        banner: `/// <reference path="./augments.d.ts" />`,
+    },
     external: ["uneventful"],
     esbuildPlugins: [
         inline({filter: /^text:/}),

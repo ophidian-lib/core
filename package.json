@@ -9,8 +9,10 @@
   "author": "PJ Eby",
   "license": "ISC",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
   "files": [
     "./dist/*"
   ],
@@ -45,6 +47,8 @@
   "scripts": {
     "docs": "tsx typedoc/run.mts",
     "watch-docs": "onchange -i --kill \"*.md\"  \"guides/**/*.md\" \"typedoc.config.*\" \"typedoc/*\" -- tsx typedoc/run.mts --watch",
-    "prepare": "tsup && cross-cat src/augments.d.ts >>dist/index.d.ts"
+    "watch-prepare": "pnpm run add-augments && tsup --watch",
+    "add-augments": "cross-cat src/augments.d.ts >dist/augments.d.ts",
+    "prepare": "tsup --clean && pnpm run add-augments"
   }
 }
