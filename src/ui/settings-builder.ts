@@ -2,7 +2,7 @@ import { Component, PluginSettingTab, Setting } from "obsidian";
 import { obsidian as o } from "../obsidian.ts";
 import { SettingsService } from "../plugin-settings.ts";
 import { Useful, getContext, onLoad, use, app } from "../services.ts";
-import { detached, must } from "uneventful";
+import { getJob, must, root } from "uneventful";
 import { peek, rule, value } from "uneventful/signals"
 
 /** @category Settings UI */
@@ -51,7 +51,7 @@ export class SettingsTabBuilder extends PluginSettingTab implements Useful, Fiel
 
     constructor() {
         super(app, use(o.Plugin));
-        this.plugin.register(detached.start(() => {
+        this.plugin.register(root.start(() => {
             must(use(SettingsService).once(() => {
                 onLoad(this.plugin, () => this.plugin.addSettingTab(this));
             }));

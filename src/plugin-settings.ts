@@ -3,7 +3,6 @@ import { taskQueue } from "./defer.ts";
 import { obsidian as o } from "./obsidian.ts";
 import { Service, Useful, getContext, onLoad } from "./services.ts";
 import { cloneValue } from "./clone-value.ts";
-import { detached } from "uneventful";
 import { cached, peek, rule, value } from "uneventful/signals";
 
 /**
@@ -98,7 +97,7 @@ export class SettingsService<T extends {}> extends Service {
     }
 
     each(callback: (settings: T) => any, ctx?: any): () => void {
-        return detached.bind(rule)(() => {
+        return rule.root(() => {
             if (this.current) peek(callback.bind(ctx, this.current));
         });
     }

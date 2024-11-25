@@ -5,7 +5,7 @@
 
 import {
     Job, Yielding, getJob, isJobActive, makeJob, start, PlainFunction, OptionalCleanup, CleanupFn,
-    detached, must,
+    must, root
 } from "uneventful";
 export { type Job, type OptionalCleanup } from "uneventful";
 
@@ -35,7 +35,7 @@ interface savepoint extends ActiveSavePoint {
     readonly active: boolean;
 
     /**
-     * @deprecated Use {@link detached}.start(action) instead
+     * @deprecated Use {@link root}.start(action) instead
      *
      * Create a savepoint, optionally capturing cleanup callbacks from a
      * supplied function.
@@ -140,7 +140,7 @@ class spWrapper implements SavePoint {
 
 /** @deprecated Use job APIs from uneventful instead */
 export let savepoint: savepoint = class extends spWrapper {
-    constructor(action?: () => OptionalCleanup) { super(detached.start(action)); }
+    constructor(action?: () => OptionalCleanup) { super(root.start(action)); }
     static get active() { return isJobActive(); }
     static add(...cleanups: OptionalCleanup[]): void { cleanups.forEach(must); }
     static subtask(fn?: Cleanup) { return new spWrapper(fn ? makeJob(undefined, fn) : start()); }
@@ -157,12 +157,12 @@ export function canCleanup() { return isJobActive(); }
 /** @deprecated Use {@link must}()` instead  @category Targeted for Removal */
 export function cleanup(...cleanups: OptionalCleanup[]) { cleanups.forEach(must); }
 
-/** @deprecated Use {@link detached}.start(action).end instead  @category Targeted for Removal */
+/** @deprecated Use {@link root}.start(action).end instead  @category Targeted for Removal */
 export function withCleanup(action: () => OptionalCleanup): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: false): Cleanup;
 export function withCleanup(action: () => OptionalCleanup, optional: true): OptionalCleanup;
 export function withCleanup(action: () => OptionalCleanup, optional?: boolean): OptionalCleanup {
-    return detached.start(action).end;
+    return root.start(action).end;
 }
 
 /**

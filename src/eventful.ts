@@ -1,4 +1,4 @@
-import { OptionalCleanup, Stream, forEach, fromPromise, must, to, Yielding, next, isJobActive, detached } from "uneventful";
+import { OptionalCleanup, Stream, forEach, fromPromise, must, to, Yielding, next, isJobActive, root } from "uneventful";
 import { cached, until as _until } from "uneventful/signals"
 
 /**
@@ -45,7 +45,7 @@ export type Waitable<T> = (() => T) | Stream<T> | Promise<T> | PromiseLike<T>
  * @category Targeted for Removal
  */
 export function when<T>(source: Waitable<T>, sink: (value: T) => OptionalCleanup, onErr?: (e: any) => void): () => void {
-    if (!isJobActive()) return detached.bind(when)(source, sink, onErr);
+    if (!isJobActive()) return root.bind(when)(source, sink, onErr);
     if (isPromiseLike<T>(source)) {
         source = fromPromise(source)
     } else if (typeof source !== "function") {

@@ -3,7 +3,7 @@ import { obsidian as o } from "./obsidian.ts";
 import { Context, Useful } from "to-use";
 import { setMap } from "./add-ons.ts";
 import { Component } from "obsidian";
-import { detached, must, start } from "uneventful";
+import { must, root } from "uneventful";
 
 /**
  * Return an opened resource of the requested type.
@@ -78,8 +78,12 @@ export class ResourceMap<T extends SharedResource<K>, K> extends Service {
         const res = this.pool.get(key) || setMap(this.pool, key, new this.factory(this.use, key));
         ++res.openCount;
         must(() => { if (!--res.openCount) { res.unload(); this.pool.delete(key); } });
-        if (res.openCount === 1) res.register(detached.start(() => res.load()).end);
+        if (res.openCount === 1) res.register(root.start(() => res.load()).end);
         return res;
+    }
+
+    onunload(): void {
+        this.pool.forEach(res => res.unload())
     }
 }
 

@@ -97,7 +97,7 @@ export const rule: GenericMethodDecorator<((...args: any[]) => OptionalCleanup)>
 export const action = _action;
 
 /**
- * @deprecated Use rule(fn) from uneventful/signals.  (For "standalone" rules, use `rule.detached(fn)`.)
+ * @deprecated Use rule(fn) from uneventful/signals.  (For "standalone" rules, use `rule.root(fn)`.)
  *
  * Register a callback that will run repeatedly in response to changes
  *
@@ -126,13 +126,13 @@ export const action = _action;
  */
 export function effect(action: () => OptionalCleanup, standalone?: boolean): () => void {
     if (standalone !== false) {
-        if (standalone === true || !isJobActive()) return _rule.detached(action);
+        if (standalone === true || !isJobActive()) return _rule.root(action);
     }
     return _rule(action);
 }
 
 /**
- * @deprecated use rule.if from uneventful/signals, or `detached.run(() => rule.if(cond, action))` for
+ * @deprecated use rule.if from uneventful/signals, or `root.run(() => rule.if(cond, action))` for
  * a "standalone" whenTrue.
  *
  * Create an effect tied to a boolean condition

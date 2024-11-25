@@ -2,6 +2,8 @@ import { obsidian as o } from "./obsidian.ts";
 import { Context, Useful, Key, Provides, use as _use } from "to-use";
 import { defer } from "./defer.ts";
 import { Component } from "obsidian";
+import { Job, SyncStart, Yielding, noop, root } from "uneventful";
+import { GeneratorBase, isFunction } from "uneventful/utils";
 export type * from "to-use";
 export var app: o.App;
 
@@ -20,6 +22,8 @@ export const use = /* @__PURE__ */ (use => {
             rootCtx.set(plugin.constructor, plugin);
             // ensure boot service loads and unloads with the (root) plugin
             plugin.addChild(rootCtx.use(Bootloader));
+            // Ensure the plugin ends the root job on unload
+            plugin.register(() => defer(root.end))
         } else if (plugin !== rootCtx.use(o.Plugin)) {
             throw new TypeError("use.plugin() called on multiple plugins");
         }
@@ -114,4 +118,56 @@ export function onLoad(component: o.Component, callback: () => any) {
     const child = new o.Component();
     child.onload = () => { safeRemoveChild(component, child); component = null; callback(); }
     component.addChild(child);
+}
+
+/**
+ * Decorate an `onload()` method to run in a job attached to the component.
+ *
+ * Most Uneventful APIs require an active job, but when Obsidian loads
+ * components there usually isn't one active.  This decorator lets you make your
+ * `onload()` method automatically run in a job attached to the component, so
+ * you don't have to manually deal with any of that.
+ *
+ * Just add `@register` before the method definition (assuming your build has
+ * either legacy or TC39 decorators enabled), and then you can use rule,
+ * forEach, start, must, connect, etc. in the method without any other setup,
+ * and the matching cleanups will run when the component unloads.
+ *
+ * Note: the `onload()` method can be a generator if you want it to run
+ * asynchronously; this decorator will wrap it so it suspends on completion
+ * rather than undoing everything it just did.  Just use `@register *onload()
+ * {}` instead of `@register onload() {}`.
+ *
+ * @category Components and Services
+ */
+export function register<T extends Component, M extends OnloadMethod<T>>(fn: M, ctx: OnloadDecoratorContext): M;
+
+/** @hidden Legacy Decorator protocol */
+export function register<T extends Component, D extends OnloadDescriptor<T>>(
+    clsOrProto: any, name: "onload", desc: D
+): D
+
+export function register<T extends Component, D extends OnloadDescriptor<T>>(
+    fn: OnloadMethod<T>, _ctx?: any, desc?: D
+): D | OnloadMethod<T> {
+    function decorated() {
+        const start = isGeneratorFunction(fn) ?
+            function*(this: T, job: Job<never>) {
+                yield *((fn as OnloadGenerator<T>).call(this, job));
+                yield noop;
+            } :
+            fn
+        ;
+        this.register(root.start(this, start).end);
+    }
+    return desc ? (fn = desc.value, {...desc, value: decorated}) : decorated;
+}
+
+type OnloadMethod<T extends Component> = SyncStart<never, T> | OnloadGenerator<T>
+type OnloadGenerator<T extends Component> = (this: T, job: Job<never>) => Yielding<void>
+type OnloadDecoratorContext = {kind: "method", name: "onload"}
+type OnloadDescriptor<T extends Component> = {value?: OnloadMethod<T>}
+
+function isGeneratorFunction<G extends Generator<any,any,any>=Generator>(fn: any): fn is (this: any, ...args: any[]) => G {
+    return isFunction(fn) && fn.prototype instanceof GeneratorBase
 }
