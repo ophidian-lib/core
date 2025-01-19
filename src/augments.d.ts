@@ -3,6 +3,11 @@
  * on the end of our dist/index.d.ts.  This is necessary because tsup (or more
  * precisely, rollup-plugin-dts) absolutely *hates* declaration merging and
  * mangles the crap out of it if you do stuff in different files.
+ *
+ * (Also, if you do any *class* augmentation anywhere other than this file,
+ * rollup-plugin-dts turns the augmented classes into `export type` in
+ * index.d.ts, because it thinks they're only interfaces, not classes augmented
+ * with an interface.)
  */
 
 import * as o from "obsidian";
@@ -38,6 +43,7 @@ declare module "obsidian" {
     }
     interface Plugin {
         loadCSS(): Promise<void>;
+        onExternalSettingsChange?(): any
     }
     interface WorkspaceParent {
         children: WorkspaceItem[]

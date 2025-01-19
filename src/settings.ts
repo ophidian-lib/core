@@ -187,9 +187,3 @@ export const settings = /* @__PURE__ */ (() => {
         })
     }
 })()
-
-declare module "obsidian" {
-    interface Plugin {
-        onExternalSettingsChange?(): any
-    }
-}
