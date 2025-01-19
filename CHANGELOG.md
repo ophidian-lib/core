@@ -2,6 +2,7 @@
 
 ### 0.0.25 (unreleased)
 
+- New settings APIs: `settings` and `settingsTab`.  (The older APIs are still available, but share their implementation with the new APIs.)  Among other features, automatic transparent support for `onExternalSettingsChange()` has been added, meaning that as long as you're using setting subscriptions your app will automatically apply any new settings when using Obsidian Sync or other tools that update your plugin's `data.json`.
 - Add `@register` decorator that lets you run your Obsidian components' `.onload()` methods in an Uneventful job, so you don't have to `this.register(root.start(() => {}).end)` in every component.
 - Fixed: `LayoutSetting.onSet()` was passing the wrong arguments to its callback when setting was tied to a specific layout item (via `.of()` or at construction time). If you were relying on this behavior, you may need to add an extra (ignored) initial argument to your callback.
 - As of this version, [Uneventful](https://uneventful.js.org/) 0.0.10 is required as a peerDependency, and the old preact/wonka code has been removed.

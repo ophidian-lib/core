@@ -90,12 +90,15 @@ export const settings = /* @__PURE__ */ (() => {
         if (typeof prop === "string") {
             return helpers.get(prop) || setMap(helpers, prop, cached<JSON>(
                 () => {
-                    if (settingsLoaded()) return cookedSettings()[prop]
-                    throw new Error("Settings not loaded yet")
+                    throwUnlessLoaded()
+                    return cookedSettings()[prop]
                 }
-            ).withSet(v => rawSettings.set(JSON.stringify(
-                {...JSON.parse(rawSettings()), [prop]: v}
-            ))))
+            ).withSet(v => {
+                throwUnlessLoaded()
+                rawSettings.set(JSON.stringify(
+                    {...JSON.parse(rawSettings()), [prop]: v}
+                ))
+            }))
         }
     }})
 
@@ -143,9 +146,15 @@ export const settings = /* @__PURE__ */ (() => {
             settingsLoaded.set(true)
         }
     }
+
+    function throwUnlessLoaded() {
+        if (!settingsLoaded) throw new Error("Settings not loaded yet")
+    }
+
     function withUntil<T extends object, R>(ob: T, until: () => Yielding<R>): T & UntilMethod<R> {
         return Object.assign(ob, {"uneventful.until": until})
     }
+
     function withRuleAndEdit<T extends object>(ob: T) {
         return Object.assign(ob, {
             /**

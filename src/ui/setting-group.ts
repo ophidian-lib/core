@@ -3,30 +3,32 @@ import { LocalObject } from "../localStorage.ts";
 import { obsidian as o } from "../obsidian.ts";
 import { Service, the, app } from "../services.ts";
 import { cached, rule, value } from "uneventful/signals";
-import { Feature, applyFeatures, FieldBuilder, FieldParent, useSettingsTab, SettingsTabBuilder } from "./settings-builder.ts";
+import { Feature, applyFeatures, FieldBuilder, FieldParent, settingsBuilder } from "./settings-builder.ts";
 import groupStyle from "scss:./setting-group.scss";
+import { addOn } from "../add-ons.ts";
 
 /** @category Settings UI */
-export function group(): SettingGroup<SettingsTabBuilder>
+export function group(): SettingGroup<FieldParent>
 export function group<T extends FieldParent>(owner: T): SettingGroup<T>
-export function group(owner?: FieldParent) {
-    return new SettingGroup(owner || useSettingsTab());
+export function group(owner: FieldParent = settingsBuilder()) {
+    return new SettingGroup(owner);
 }
 
 /** @category Settings UI */
-class SettingGroup<T extends FieldParent> extends Setting implements FieldParent {
+export class SettingGroup<T extends FieldParent> extends Setting implements FieldParent {
 
     readonly detailsEl: HTMLDetailsElement;
 
-    constructor(readonly parent?: T, public containerEl: HTMLElement = (<FieldParent>parent || useSettingsTab()).containerEl) {
+    constructor(readonly parent = settingsBuilder() as T, public containerEl: HTMLElement = parent.containerEl) {
+        if (!containerEl.matchParent("details.ophidian-settings-group")) {
+            // We are a root group, make sure the container has the style
+            groupStyleEl(containerEl)
+        }
         const detailsEl = containerEl.createEl("details", "ophidian-settings-group");
         const summaryEl = detailsEl.createEl("summary", "ophidian-settings-group");
         super(summaryEl);
         this.setHeading();
         this.containerEl = (this.detailsEl = detailsEl).createDiv();
-        if (!containerEl.parentElement.matchParent("details.ophidian-settings-group")) {
-            detailsEl.createEl("style", {text: groupStyle});
-        }
         // prevent closing group on click
         this.controlEl.addEventListener("click", e => e.preventDefault());
     }
@@ -62,3 +64,5 @@ export class SettingGroupState extends Service {
     get(key: string, dflt = false) { return cached(() => this.data()[key] ?? dflt)(); }
     set(key: string, value: boolean) { return this.storage.modify(v => { v[key] = value; }); }
 }
+
+const groupStyleEl = addOn((el: HTMLElement) => el.createEl("style", {text: groupStyle}))
