@@ -32,4 +32,4 @@ export type JSONArray = JSON[] & NotAFunction;
  *
  * @category Types and Interfaces
  */
-export type NotAFunction = { bind?: void; } | { apply?: void; } | { call?: void; };
+export type NotAFunction = { bind?: void; } | { apply?: void; } | { call?: void; } | { length?: void; };
