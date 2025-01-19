@@ -23,8 +23,6 @@ export const use = /* @__PURE__ */ (use => {
             rootCtx.set(plugin.constructor, plugin);
             // ensure boot service loads and unloads with the (root) plugin
             plugin.addChild(rootCtx.use(Bootloader));
-            // Ensure the plugin ends the root job on unload
-            plugin.register(() => defer(root.end))
         } else if (plugin !== rootCtx.use(o.Plugin)) {
             throw new TypeError("use.plugin() called on multiple plugins");
         }
