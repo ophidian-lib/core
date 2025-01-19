@@ -6,9 +6,11 @@ export * from "./deferred.ts";
 export * from "./dom.ts";
 export * from "./eventful.ts";
 export * from "./indexing.ts";
+export * from "./JSON.ts"
 export * from "./layout/index.ts";
 export * from "./localStorage.ts";
 export * from "./plugin-settings.ts";
+export * from "./settings.ts";
 export * from "./resources.ts";
 export * from "./services.ts";
 export * from "./signify.ts";

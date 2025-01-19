@@ -10,8 +10,10 @@
   "license": "ISC",
   "type": "module",
   "exports": {
-    "import": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
   "files": [
     "./dist/*"
@@ -39,10 +41,10 @@
     "tsx": "^4.10.0",
     "typedoc": "^0.25.13",
     "typescript": "5.2.2",
-    "uneventful": "^0.0.9"
+    "uneventful": "^0.0.10"
   },
   "peerDependencies": {
-    "uneventful": "^0.0.9"
+    "uneventful": "^0.0.10"
   },
   "scripts": {
     "docs": "tsx typedoc/run.mts",

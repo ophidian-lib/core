@@ -19,7 +19,7 @@ specifiers:
   tsx: ^4.10.0
   typedoc: ^0.25.13
   typescript: 5.2.2
-  uneventful: ^0.0.9
+  uneventful: ^0.0.10
 
 dependencies:
   defaults: 2.0.1
@@ -42,7 +42,7 @@ devDependencies:
   tsx: 4.10.0
   typedoc: 0.25.13_typescript@5.2.2
   typescript: 5.2.2
-  uneventful: 0.0.9
+  uneventful: 0.0.10
 
 packages:
 
@@ -1670,8 +1670,8 @@ packages:
     hasBin: true
     dev: true
 
-  /uneventful/0.0.9:
-    resolution: {integrity: sha512-UjLAKtYOny2lbLl+gPjbfgEVgt/ViPBGzyaYZKltUwcb5+aPVhZVCZZRtPdCvEr1lPQ8uTp1e2Mun4YG6B6tcQ==}
+  /uneventful/0.0.10:
+    resolution: {integrity: sha512-uSgjcmhgH8tqwT8fe8iVIitUbfZfmha7Xxi2cu/ZpJsvl+iQtYfFPjF/tA/s+Co8pbIo08jZh70Kww9PraCSAg==}
     dev: true
 
   /vscode-oniguruma/1.7.0:

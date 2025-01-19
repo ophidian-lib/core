@@ -1,11 +1,12 @@
 import { obsidian as o } from "./obsidian.ts";
 import { Context, Useful, Key, Provides, use as _use } from "to-use";
 import { defer } from "./defer.ts";
+import { setPlugin } from "./plugin.ts"
 import { Component } from "obsidian";
 import { Job, SyncStart, Yielding, noop, root } from "uneventful";
-import { GeneratorBase, isFunction } from "uneventful/utils";
 export type * from "to-use";
-export var app: o.App;
+export { app } from "./plugin.ts"
+import { isGeneratorFunction } from "uneventful/utils";
 
 /** @category Components and Services */
 export const use = /* @__PURE__ */ (use => {
@@ -15,7 +16,7 @@ export const use = /* @__PURE__ */ (use => {
     }
     use.plugin = function plugin(plugin: o.Plugin) {
         if (!rootCtx) {
-            app = plugin.app;
+            setPlugin(plugin);
             rootCtx = use.fork();
             // Register the plugin under its generic and concrete types
             rootCtx.set(o.Plugin, plugin);
@@ -167,7 +168,3 @@ type OnloadMethod<T extends Component> = SyncStart<never, T> | OnloadGenerator<T
 type OnloadGenerator<T extends Component> = (this: T, job: Job<never>) => Yielding<void>
 type OnloadDecoratorContext = {kind: "method", name: "onload"}
 type OnloadDescriptor<T extends Component> = {value?: OnloadMethod<T>}
-
-function isGeneratorFunction<G extends Generator<any,any,any>=Generator>(fn: any): fn is (this: any, ...args: any[]) => G {
-    return isFunction(fn) && fn.prototype instanceof GeneratorBase
-}
