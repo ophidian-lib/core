@@ -12,7 +12,7 @@ export { defer } from "uneventful";
  */
 export function taskQueue() {
     let last: Promise<any> = Promise.resolve();
-    return <T>(action?: () => T|PromiseLike<T>) => {
+    return <T>(action?: () => T|PromiseLike<T>): Promise<T> => {
         return !action ? last : last = new Promise<T>(
             (res, rej) => last.finally(
                 () => { try { res(action()); } catch(e) { rej(e); } }
