@@ -5,7 +5,7 @@ import { setMap } from "./add-ons.ts";
 import { taskQueue } from "./defer.ts";
 import { cloneValue } from "./clone-value.ts";
 import { around } from "monkey-around";
-import { UntilMethod, Yielding, must } from "uneventful";
+import { DisposeFn, OptionalCleanup, UntilMethod, Yielding, must } from "uneventful";
 import type { JSONObject, JSON } from "./JSON.ts";
 import { plugin } from "./plugin.ts";
 
@@ -100,7 +100,7 @@ export const settings = /* @__PURE__ */ (() => {
     }})
 
     const io = taskQueue(), ioRule = rule.factory(io), useIO = service(ioHandler)
-    return withUntil(settings, function*(){ return yield *until(settingsLoaded); })
+    return withRuleAndEdit(withUntil(settings, function*(){ return yield *until(settingsLoaded); }))
 
     function *ioHandler() {
         // Track external settings changes and trigger loads (This must be done
@@ -131,7 +131,7 @@ export const settings = /* @__PURE__ */ (() => {
             if (toWrite != onDisk()) {
                 await plugin.saveData(JSON.parse(toWrite))
                 onDisk.set(toWrite)
-                // XXX sleep here to enforce a max save rate
+                // XXX sleep here to enforce a max save rate?
             }
         }
 
@@ -145,6 +145,46 @@ export const settings = /* @__PURE__ */ (() => {
     }
     function withUntil<T extends object, R>(ob: T, until: () => Yielding<R>): T & UntilMethod<R> {
         return Object.assign(ob, {"uneventful.until": until})
+    }
+    function withRuleAndEdit<T extends object>(ob: T) {
+        return Object.assign(ob, {
+            /**
+             * Create a rule that will run when settings are loaded
+             *
+             * @param action The rule body, which can return a cleanup function
+             * (or use regular job APIs).  The rule can directly use a specific
+             * setting, or configure nested rules or subscriptions for
+             * individual settings, or even call settings() to get all the
+             * settings (in which case it will rerun on **every** settings
+             * change.)
+             */
+            rule(action: () => OptionalCleanup): DisposeFn {
+                useIO() // ensure settings load and update
+                return rule.root(() => { if (settingsLoaded()) return action() })
+            },
+            /**
+             * Update current settings using an update function
+             *
+             * Note: this mainly exists for backward compatibility with the old
+             * {@link SettingsService} interface; you should usually just .edit()
+             * or .set() individual settings instead of using this.
+             *
+             * @param update A function taking the current settings, which must
+             * then return an updated version of the settings, or else modify them
+             * in place and return nothing.
+             *
+             * @returns The updated settings
+             */
+            edit<T extends JSONObject>(update: (old: T) => T|void): Promise<T> {
+                useIO() // ensure settings load and update
+                return io(() => {
+                    const oldVal = cloneValue(cookedSettings() as T)
+                    const newVal = update(oldVal) || oldVal
+                    rawSettings.set(JSON.stringify(newVal))
+                    return newVal
+                })
+            }
+        })
     }
 })()
 

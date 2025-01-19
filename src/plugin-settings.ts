@@ -1,9 +1,9 @@
-import defaults from "defaults";
-import { taskQueue } from "./defer.ts";
 import { obsidian as o } from "./obsidian.ts";
-import { Service, Useful, getContext, onLoad } from "./services.ts";
+import { Service, Useful, getContext } from "./services.ts";
 import { cloneValue } from "./clone-value.ts";
-import { cached, peek, rule, value } from "uneventful/signals";
+import { peek } from "uneventful/signals";
+import { settings } from "./settings.ts";
+import { JSONObject } from "./JSON.ts";
 
 /**
  * ### Safe, simple, and centralized setting state management
@@ -29,13 +29,13 @@ import { cached, peek, rule, value } from "uneventful/signals";
  *     type MySettings = {...};
  *
  *     class MyPlugin extends Plugin {
- *         settings = useSettings(
+ *         settings = useSettings<MySettings>(
  *             this,   // plugin or other owner
- *             {...} as MySettings,  // default settings
- *             (settings: MySettings) => {
+ *             {...},  // default settings
+ *             (settings) => {
  *                 // code that runs when settings are loaded or changed
  *             },
- *             (settings: MySettings) => {
+ *             (settings) => {
  *                 // code to do one-time setup only
  *             }
  *         )
@@ -50,7 +50,7 @@ import { cached, peek, rule, value } from "uneventful/signals";
  *
  * @category Settings Management
  */
-export function useSettings<T>(
+export function useSettings<T extends JSONObject>(
     owner: o.Component & Partial<Useful>,
     defaultSettings?: T,
     each?: (settings: T) => void,
@@ -64,30 +64,13 @@ export function useSettings<T>(
 }
 
 /** @category Settings Management */
-export class SettingsService<T extends {}> extends Service {
-    private plugin = this.use(o.Plugin);
-    private queue = taskQueue();
-    private data = {} as T;
-    private version = value(0);
-    get = cached(() => this.version() ? cloneValue(this.data) : null)
+export class SettingsService<T extends JSONObject> extends Service {
+    get = () => cloneValue(settings() as T)
 
     get current() { return this.get(); }
 
-    addDefaults(settings: T) {
-        // We can do this without queueing, as it will not update existing values,
-        // and if the values are defaults, there's no need to trigger an event.
-        this.data = <T> defaults(this.data, settings);
-    }
-
-    constructor() {
-        super();
-        this.queue(async () => {
-            await new Promise(res => onLoad(this.plugin, res as () => any));
-            this.data = <T> defaults(
-                (await this.plugin.loadData()) ?? {}, this.data
-            )
-            this.version.set(this.version()+1);
-        })
+    addDefaults(defaults: T) {
+        settings(defaults)
     }
 
     once(callback: (settings: T) => any, ctx?: any): () => void {
@@ -97,8 +80,8 @@ export class SettingsService<T extends {}> extends Service {
     }
 
     each(callback: (settings: T) => any, ctx?: any): () => void {
-        return rule.root(() => {
-            if (this.current) peek(callback.bind(ctx, this.current));
+        return settings.rule(() => {
+            peek(callback.bind(ctx, this.get()));
         });
     }
 
@@ -108,22 +91,6 @@ export class SettingsService<T extends {}> extends Service {
     }
 
     update(op: (val:T) => T|void) {
-        return <Promise<T>> this.queue(async () => {
-            const oldData = this.data;
-            const oldJSON = JSON.stringify(oldData);
-            try {
-                var newData = JSON.parse(oldJSON);
-                newData = op(newData) ?? newData;
-                const newJSON = JSON.stringify(newData);
-                if (oldJSON !== newJSON) {
-                    this.data = newData;
-                    this.version.set(this.version()+1);
-                    await this.plugin.saveData(JSON.parse(newJSON)).catch(console.error);
-                }
-            } catch(e) {
-                console.error(e);
-            }
-            return this.data;
-        });
+        return settings.edit(op)
     }
 }
