@@ -16,7 +16,7 @@
     }
   },
   "files": [
-    "./dist/*"
+    "./dist/*", "./src/augments.d.ts"
   ],
   "sideEffects": false,
   "packageManager": "pnpm@7.33.6",
@@ -33,7 +33,6 @@
     "@knodes/typedoc-plugin-pages": "^0.23.4",
     "@knodes/typedoc-pluginutils": "^0.23.4",
     "@types/node": "16",
-    "cross-cat": "^1.0.0",
     "esbuild-plugin-inline-import": "^1.0.4",
     "onchange": "^7.1.0",
     "sass": "^1.76.0",
@@ -49,8 +48,7 @@
   "scripts": {
     "docs": "tsx typedoc/run.mts",
     "watch-docs": "onchange -i --kill \"*.md\"  \"guides/**/*.md\" \"typedoc.config.*\" \"typedoc/*\" -- tsx typedoc/run.mts --watch",
-    "watch-prepare": "pnpm run add-augments && tsup --watch",
-    "add-augments": "cross-cat src/augments.d.ts >dist/augments.d.ts",
-    "prepare": "tsup --clean && pnpm run add-augments"
+    "watch-prepare": "tsup --watch",
+    "prepare": "tsup --clean"
   }
 }

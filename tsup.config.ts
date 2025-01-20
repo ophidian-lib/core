@@ -10,7 +10,7 @@ export default defineConfig({
     treeshake: true,
     dts: {
         entry: "src/index.ts",
-        banner: `/// <reference path="./augments.d.ts" />`,
+        banner: `/// <reference path="../src/augments.d.ts" />`,
     },
     external: ["uneventful"],
     esbuildPlugins: [

@@ -6,7 +6,6 @@ specifiers:
   '@knodes/typedoc-plugin-pages': ^0.23.4
   '@knodes/typedoc-pluginutils': ^0.23.4
   '@types/node': '16'
-  cross-cat: ^1.0.0
   defaults: ^2.0.1
   esbuild-plugin-inline-import: ^1.0.4
   i18next: ^20.3.2
@@ -34,7 +33,6 @@ devDependencies:
   '@knodes/typedoc-plugin-pages': 0.23.4_typedoc@0.25.13
   '@knodes/typedoc-pluginutils': 0.23.4_typedoc@0.25.13
   '@types/node': 16.18.38
-  cross-cat: 1.0.0
   esbuild-plugin-inline-import: 1.0.4
   onchange: 7.1.0
   sass: 1.76.0
@@ -845,15 +843,6 @@ packages:
     engines: {node: '>= 6'}
     dev: true
 
-  /cross-cat/1.0.0:
-    resolution: {integrity: sha512-0ocmpzvDnMjF7sCYDeY0rC79Js0WitRGZ+OS3pS2o3aX1Mj7/7R5mtfdZsIMKM+2ku6YqkOXPeBNJFahDXqCEw==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dependencies:
-      commander: 4.1.1
-      get-stdin: 7.0.0
-    dev: true
-
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
@@ -1031,11 +1020,6 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
-
-  /get-stdin/7.0.0:
-    resolution: {integrity: sha512-zRKcywvrXlXsA0v0i9Io4KDRaAw7+a1ZpjRwl9Wox8PFlVCCHra7E9c4kqXCoCM9nR5tBkaTTZRBoCm60bFqTQ==}
-    engines: {node: '>=8'}
-    dev: true
 
   /get-stream/6.0.1:
     resolution: {integrity: sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==}
