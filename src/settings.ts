@@ -6,13 +6,13 @@ import { taskQueue } from "./defer.ts";
 import { cloneValue } from "./clone-value.ts";
 import { around } from "monkey-around";
 import { DisposeFn, OptionalCleanup, UntilMethod, Yielding, must } from "uneventful";
-import type { JSONObject, JSON } from "./JSON.ts";
+import type { JSON, JSONObject, JSONValue } from "./JSON.ts";
 import { plugin } from "./plugin.ts";
 
 /**
  * @category Settings Management
  */
-export type SettingsMigration<T extends JSONObject=JSONObject> = (old: T) => T
+export type SettingsMigration<T> = (old: JSON<T>) => JSON<T>
 
 export const settings = /* @__PURE__ */ (() => {
     /**
@@ -52,7 +52,7 @@ export const settings = /* @__PURE__ */ (() => {
      *
      * @category Settings Management
      */
-    function settings<T extends JSONObject>(defaults: T, migrate?: (old: T) => T): {[K in keyof T]: Writable<T[K]>}
+    function settings<T>(defaults: JSON<T>, migrate?: (old: JSON<T>) => JSON<T>): {[K in keyof T]: Writable<T[K]>}
 
     /**
      * Get the current settings as a reactive value, or null if not loaded.
@@ -62,13 +62,13 @@ export const settings = /* @__PURE__ */ (() => {
      * settings are loaded.  (You can also use `yield *until(settings)` to
      * wait for settings to be loaded in an async task.)
      */
-    function settings<T extends JSONObject>(): T
+    function settings<T>(): JSON<T>
 
-    function settings(defaults?: JSONObject, migrate?: (old: JSONObject) => JSONObject) {
+    function settings<T>(defaults?: JSON<T>, migrate?: (old: JSON<T>) => JSON<T>) {
         useIO()
         if (defaults) {
             defaultSettings.set(JSON.stringify(setDefaults(
-                JSON.parse(defaultSettings()) as JSONObject, cloneValue(defaults)
+                JSON.parse(defaultSettings()) as JSON<T>, cloneValue(defaults)
             )))
             if (migrate) migrations.push(migrate)
             return settingsProxy
@@ -84,11 +84,11 @@ export const settings = /* @__PURE__ */ (() => {
         JSON.parse(rawSettings()) || {}, JSON.parse(defaultSettings())
     )))
     const cookedSettings = cached(() => JSON.parse(settingsJSON()))
-    const migrations: SettingsMigration[] = []
-    const helpers = new Map<string, Writable<JSON>>()
+    const migrations: SettingsMigration<JSONObject>[] = []
+    const helpers = new Map<string, Writable<JSONValue>>()
     const settingsProxy = new Proxy({}, { get(_, prop) {
         if (typeof prop === "string") {
-            return helpers.get(prop) || setMap(helpers, prop, cached<JSON>(
+            return helpers.get(prop) || setMap(helpers, prop, cached<JSONValue>(
                 () => {
                     throwUnlessLoaded()
                     return cookedSettings()[prop]
@@ -148,7 +148,7 @@ export const settings = /* @__PURE__ */ (() => {
     }
 
     function throwUnlessLoaded() {
-        if (!settingsLoaded) throw new Error("Settings not loaded yet")
+        if (!settingsLoaded()) throw new Error("Settings not loaded yet")
     }
 
     function withUntil<T extends object, R>(ob: T, until: () => Yielding<R>): T & UntilMethod<R> {
@@ -172,7 +172,7 @@ export const settings = /* @__PURE__ */ (() => {
                 return rule.root(() => { if (settingsLoaded()) return action() })
             },
             /**
-             * Update current settings using an update function
+             * Asynchronously update current settings using an update function
              *
              * Note: this mainly exists for backward compatibility with the old
              * {@link SettingsService} interface; you should usually just .edit()
@@ -180,14 +180,15 @@ export const settings = /* @__PURE__ */ (() => {
              *
              * @param update A function taking the current settings, which must
              * then return an updated version of the settings, or else modify them
-             * in place and return nothing.
+             * in place and return nothing.  The function is only run after any
+             * current I/O finishes (i.e. loading or saving)
              *
-             * @returns The updated settings
+             * @returns A promise for the updated settings
              */
-            edit<T extends JSONObject>(update: (old: T) => T|void): Promise<T> {
+            edit<T>(update: (old: JSON<T>) => JSON<T>|void): Promise<JSON<T>> {
                 useIO() // ensure settings load and update
                 return io(() => {
-                    const oldVal = cloneValue(cookedSettings() as T)
+                    const oldVal = cloneValue(cookedSettings() as JSON<T>)
                     const newVal = update(oldVal) || oldVal
                     rawSettings.set(JSON.stringify(newVal))
                     return newVal

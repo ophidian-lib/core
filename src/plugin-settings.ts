@@ -3,7 +3,7 @@ import { Service, Useful, getContext } from "./services.ts";
 import { cloneValue } from "./clone-value.ts";
 import { peek } from "uneventful/signals";
 import { settings } from "./settings.ts";
-import { JSONObject } from "./JSON.ts";
+import { JSON } from "./JSON.ts";
 
 /**
  * ### Safe, simple, and centralized setting state management
@@ -50,11 +50,11 @@ import { JSONObject } from "./JSON.ts";
  *
  * @category Settings Management
  */
-export function useSettings<T extends JSONObject>(
+export function useSettings<T>(
     owner: o.Component & Partial<Useful>,
-    defaultSettings?: T,
-    each?: (settings: T) => void,
-    once?: (settings: T) => void,
+    defaultSettings?: JSON<T>,
+    each?: (settings: JSON<T>) => void,
+    once?: (settings: JSON<T>) => void,
 ) {
     const svc = getContext(owner)(SettingsService) as SettingsService<T>;
     if (defaultSettings) svc.addDefaults(defaultSettings);
@@ -64,33 +64,33 @@ export function useSettings<T extends JSONObject>(
 }
 
 /** @category Settings Management */
-export class SettingsService<T extends JSONObject> extends Service {
-    get = () => cloneValue(settings() as T)
+export class SettingsService<T> extends Service {
+    get = () => cloneValue(settings() as JSON<T>)
 
     get current() { return this.get(); }
 
-    addDefaults(defaults: T) {
+    addDefaults(defaults: JSON<T>) {
         settings(defaults)
     }
 
-    once(callback: (settings: T) => any, ctx?: any): () => void {
+    once(callback: (settings: JSON<T>) => any, ctx?: any): () => void {
         // each() will defer the callback, so it won't actually run before unsub is set
         const unsub =  this.each(data => { unsub(); callback.call(ctx, data); });
         return unsub;
     }
 
-    each(callback: (settings: T) => any, ctx?: any): () => void {
+    each(callback: (settings: JSON<T>) => any, ctx?: any): () => void {
         return settings.rule(() => {
             peek(callback.bind(ctx, this.get()));
         });
     }
 
     /** @deprecated Use .each() instead */
-    onChange(callback: (settings: T) => any, ctx?: any): () => void {
+    onChange(callback: (settings: JSON<T>) => any, ctx?: any): () => void {
         return this.each(callback, ctx);
     }
 
-    update(op: (val:T) => T|void) {
+    update(op: (val:JSON<T>) => JSON<T>|void) {
         return settings.edit(op)
     }
 }
