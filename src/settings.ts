@@ -9,10 +9,8 @@ import { DisposeFn, OptionalCleanup, UntilMethod, Yielding, must } from "unevent
 import type { JSON, JSONObject, JSONValue } from "./JSON.ts";
 import { plugin } from "./plugin.ts";
 
-/**
- * @category Settings Management
- */
-export type SettingsMigration<T> = (old: JSON<T>) => JSON<T>
+/** @inline */
+type SettingsMigration<T> = (old: T) => (T | Promise<T|void> | PromiseLike<T|void> | void)
 
 export const settings = /* @__PURE__ */ (() => {
     /**
@@ -47,12 +45,16 @@ export const settings = /* @__PURE__ */ (() => {
      * second overload for details.)
      *
      * @param migrate Optional - A function that will be called with an on-disk
-     * version of the settings, and should returning an updated value (for
-     * handling versioning of your settings schema).
+     * version of the settings, and should return an updated value (for handling
+     * versioning of your settings schema).  The function can be async, in case
+     * you need to fetch data from elsewhere, prompt the user, save the changes,
+     * upgrade data in notes, etc. etc. The function can return void or a falsy
+     * value if you only want it to execute for side-effects and/or modify the
+     * data in-place.
      *
      * @category Settings Management
      */
-    function settings<T>(defaults: JSON<T>, migrate?: (old: JSON<T>) => JSON<T>): {[K in keyof T]: Writable<T[K]>}
+    function settings<T>(defaults: JSON<T>, migrate?: SettingsMigration<JSON<T>>): {[K in keyof T]: Writable<T[K]>}
 
     /**
      * Get the current settings as a reactive value, or null if not loaded.
@@ -62,9 +64,9 @@ export const settings = /* @__PURE__ */ (() => {
      * settings are loaded.  (You can also use `yield *until(settings)` to
      * wait for settings to be loaded in an async task.)
      */
-    function settings<T>(): JSON<T>
+    function settings<T=JSONObject>(): JSON<T>
 
-    function settings<T>(defaults?: JSON<T>, migrate?: (old: JSON<T>) => JSON<T>) {
+    function settings<T>(defaults?: JSON<T>, migrate?: SettingsMigration<JSON<T>>) {
         useIO()
         if (defaults) {
             defaultSettings.set(JSON.stringify(setDefaults(
@@ -139,8 +141,9 @@ export const settings = /* @__PURE__ */ (() => {
         }
 
         async function loadData() {
-            const data = await plugin.loadData()
-            const j = JSON.stringify(migrations.reduce((p, c) => c(p), data || {}))
+            let data = (await plugin.loadData()) || {}
+            for(const m of migrations) data = (await m(data)) || data
+            const j = JSON.stringify(data)
             onDisk.set(j)
             rawSettings.set(j)
             settingsLoaded.set(true)
