@@ -17,12 +17,10 @@ module.exports = {
     excludePrivate: true,
     excludeProtected: true,
     excludeReferences: true,
-    hideParameterTypesInTitle: false,
     navigation: {
         includeCategories: true,
         includeFolders: false,
     },
-    options: "package.json", // workaround for https://github.com/KnodesCommunity/typedoc-plugins/issues/525
     sort: [
         "alphabetical"
     ],

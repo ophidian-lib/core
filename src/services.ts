@@ -162,7 +162,10 @@ export function register<T extends Component, D extends OnloadDescriptor<T>>(
     return desc ? (fn = desc.value, {...desc, value: decorated}) : decorated;
 }
 
+/** @inline */
 type OnloadMethod<T extends Component> = SyncStart<never, T> | OnloadGenerator<T>
+/** @inline */
 type OnloadGenerator<T extends Component> = (this: T, job: Job<never>) => Yielding<void>
+/** @inline */
 type OnloadDecoratorContext = {kind: "method", name: "onload"}
 type OnloadDescriptor<T extends Component> = {value?: OnloadMethod<T>}

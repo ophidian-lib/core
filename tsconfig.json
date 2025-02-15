@@ -11,7 +11,7 @@
         "strict": false,
         "strictBindCallApply": true,
         "declaration": true,
-        "emitDeclarationOnly": true,
+        "noEmit": true,
         "outDir": "dist",
         "lib": ["ES2018", "DOM"],
     },

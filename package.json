@@ -30,15 +30,13 @@
   "devDependencies": {
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.26.3",
-    "@knodes/typedoc-plugin-pages": "^0.23.4",
-    "@knodes/typedoc-pluginutils": "^0.23.4",
     "@types/node": "16",
     "esbuild-plugin-inline-import": "^1.0.4",
     "onchange": "^7.1.0",
     "sass": "^1.76.0",
     "tsup": "^8.0.2",
     "tsx": "^4.10.0",
-    "typedoc": "^0.25.13",
+    "typedoc": "TypeStrong/typedoc",
     "typescript": "5.2.2",
     "uneventful": "^0.0.10"
   },
@@ -46,8 +44,8 @@
     "uneventful": "^0.0.10"
   },
   "scripts": {
-    "docs": "tsx typedoc/run.mts",
-    "watch-docs": "onchange -i --kill \"*.md\"  \"guides/**/*.md\" \"typedoc.config.*\" \"typedoc/*\" -- tsx typedoc/run.mts --watch",
+    "docs": "typedoc",
+    "watch-docs": "typedoc --watch",
     "watch-prepare": "tsup --watch",
     "prepare": "tsup --clean"
   }

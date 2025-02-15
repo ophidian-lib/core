@@ -52,6 +52,7 @@ export function trackOpen(id: string, open=false) {
     }
 }
 
+/** @inline */
 type GroupToggles = Record<string,boolean>;
 
 /** @category Settings UI */

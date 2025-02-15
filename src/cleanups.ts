@@ -4,12 +4,15 @@
  */
 
 import {
-    Job, Yielding, getJob, isJobActive, makeJob, start, PlainFunction, OptionalCleanup, CleanupFn,
+    Job as Job_, Yielding, getJob, isJobActive, makeJob, start, PlainFunction, OptionalCleanup, CleanupFn,
     must, root
 } from "uneventful";
-export { type Job, type OptionalCleanup } from "uneventful";
 
-/** @deprecated Use {@link CleanupFn} from uneventful instead */
+/** @hidden */
+export type Job<T=any> = Job_<T>
+export { type OptionalCleanup } from "uneventful";
+
+/** @inline @deprecated Use {@link CleanupFn} from uneventful instead */
 type Cleanup = CleanupFn
 
 /**
@@ -28,6 +31,7 @@ type Cleanup = CleanupFn
  * `savepoint.active` to check if there is a currently active
  * savepoint, or make one active using its `.run()` method.)
  *
+ * @inline
  * @category Targeted for Removal
  */
 interface savepoint extends ActiveSavePoint {
@@ -85,15 +89,15 @@ export interface ActiveSavePoint {
      * Link a child savepoint to this savepoint, such that the child will remove
      * itself from the parent.
      *
-     * Similar to {@link subtask()}, except that you supply the child savepoint
+     * Similar to {@link subtask}(), except that you supply the child savepoint
      * instead of it being created automatically.
      *
-     * @param subtask The savepoint to link.
+     * @param subTask The savepoint to link.
      * @param stop The function the parent should call to roll back the subtask;
      * defaults to the subtask's `rollback()` method if not given.
      * @returns The subtask savepoint.
      */
-    link(subtask: SavePoint, stop?: Cleanup): SavePoint
+    link(subTask: SavePoint, stop?: Cleanup): SavePoint
 }
 
 /**
@@ -138,7 +142,10 @@ class spWrapper implements SavePoint {
     }
 }
 
-/** @deprecated Use job APIs from uneventful instead */
+/**
+ * @deprecated Use job APIs from uneventful instead
+ * @category Targeted for Removal
+ */
 export let savepoint: savepoint = class extends spWrapper {
     constructor(action?: () => OptionalCleanup) { super(root.start(action)); }
     static get active() { return isJobActive(); }

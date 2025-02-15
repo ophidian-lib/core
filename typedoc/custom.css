@@ -1,6 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono&display=swap');
+/* Change icon text to look like older typedoc */
+svg text {
+    font-family: "JetBrains Mono", 'Courier New', Courier, monospace;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 13px;
+}
+/* Don't put an ugly outline around documents */
+#icon-folder rect, #icon-8388608 rect { display: none; }
+
+/* Hide folder icon */
+summary.tsd-accordion-summary > span > svg { display: none; }
+summary.tsd-accordion-summary:has(> span > svg)+div.tsd-accordion-details>ul.tsd-nested-navigation {
+    margin-left: 1.5rem;
+}
+
 .col-content { max-width: 45em; }
+.col-content .tsd-panel > pre { max-width: unset; }
+.col-content .tsd-panel > * { max-width: 40em; }
+
 .site-menu, .col-sidebar { margin-right: 2rem; }
 code { padding: 0; }
+
+/* Fix wrong size code in headings */
+code { font-size: 0.875em; }
+pre code { font-size: 0.875rem; }
 
 @media (min-width: 1200px) {
     /* Keep the menus from scrolling with the main page */
@@ -14,19 +38,26 @@ code { padding: 0; }
     .col-sidebar { margin-top: -2em; }
 }
 
-
+/* Add `()` after functions and `.*` after namespaces */
+svg:has(use[href$="#icon-64"])+a::after,
 a:has(use[href$="#icon-64"]) span::after {
     content: "()";
 }
-
+svg:has(use[href$="#icon-4"])+a::after,
 a:has(use[href$="#icon-4"]) span::after {
     content: ".*";
 }
 
-.tsd-index-panel .tsd-index-list {
+/* Columnize summaries */
+/* .tsd-index-panel .tsd-index-list, .tsd-member-summaries {
     display: block;
     columns: 3;
     column-width: 10em;
+} */
+
+/* Fix too-narrow indent on page nav */
+.tsd-page-navigation-section > div {
+    margin-left: 30px;
 }
 
 a.tsd-index-link {
@@ -66,3 +97,11 @@ li.tsd-signature.tsd-anchor-link,
 pre { margin-bottom: 1em; }
 
 code { border-radius: 0; background: none; }
+
+/*
+ * Remove top-level navigation node if it's the README - this avoids duplicating
+ * the project name if there are multiple entry points and one of them has the
+ * same name as the project.  If there's only one entry point then the top-level
+ * link is "modules.html" not "index.html".
+ */
+.site-menu > .tsd-navigation > a[href$="index.html"] { display: none;}
