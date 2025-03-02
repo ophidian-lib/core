@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "checkJs": true,
         "target": "es2018",
         "module": "Node16",
         "experimentalDecorators": true,
@@ -13,10 +14,10 @@
         "declaration": true,
         "noEmit": true,
         "outDir": "dist",
-        "lib": ["ES2018", "DOM"],
+        "lib": ["ES2018", "DOM", "ESNext.Disposable"],
     },
     // Keep VSCode, tsc, typedoc, tsup, etc. from treating any output .ts files
     // as part of their input:
-    "include": ["src/**/*.ts", "tsup.config.ts"],
+    "include": ["src/**/*.ts", "tsup.config.ts", "typedoc.config.cjs"],
     "exclude": ["src/drafts/**", "dist/*"],
 }

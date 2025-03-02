@@ -1,5 +1,5 @@
 > [!note]
-> Been using Ophidian a while?  Check out the [CHANGELOG file](CHANGELOG.md) to see what's new... and what's coming soon.
+> Been using Ophidian a while?  Check out the [CHANGELOG file](https://ophidian-lib.github.io/core/CHANGELOG.html) to see what's new... and what's coming soon.
 
 ## A Component Framework for Obsidian Plugins
 

@@ -14,10 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: npm i -g --force corepack && corepack enable
       - uses: actions/setup-node@v4
-        with:
-          node-version: 16.x
-      - uses: pnpm/action-setup@v3.0.0
       - run: pnpm install && pnpm run docs
       - uses: actions/upload-pages-artifact@v3
         with:

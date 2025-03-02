@@ -16,7 +16,8 @@
     }
   },
   "files": [
-    "./dist/*", "./src/augments.d.ts"
+    "./dist/*",
+    "./src/augments.d.ts"
   ],
   "sideEffects": false,
   "packageManager": "pnpm@7.33.6",
@@ -36,7 +37,7 @@
     "sass": "^1.76.0",
     "tsup": "^8.0.2",
     "tsx": "^4.10.0",
-    "typedoc": "TypeStrong/typedoc",
+    "typedoc": "beta",
     "typescript": "5.2.2",
     "uneventful": "^0.0.10"
   },

@@ -1,3 +1,7 @@
+/**
+ * @module @ophidian/core
+ * @document ../CHANGELOG.md
+ */
 export * from "./add-ons.ts";
 export * from "./cleanups.ts";
 export * from "./clone-value.ts";
