@@ -2,16 +2,17 @@ import { around } from "monkey-around";
 import { Service, app } from "../services.ts";
 import { obsidian as o } from "../obsidian.ts";
 
-/** use() this to make your plugin support dynamic Style Settings
+/**
+ * use() this to make your plugin support dynamic Style Settings
  *
- * Currently, Obsidian doesn't announce CSS changes when plugins
- * load, so Style Settings doesn't update when you update a plugin
- * or install a new one.  This service takes care of that for you,
- * telling Style Settings to update after a plugin loads its CSS.
+ * Currently, Obsidian doesn't announce CSS changes when plugins load, so Style
+ * Settings doesn't update when you update a plugin or install a new one.  This
+ * service takes care of that for you, telling Style Settings to update after a
+ * plugin loads its CSS.
  *
- * To take effect, this service must be use()d as a plugin property,
- * or else it will miss the timing to capture the loadCSS event.
-**/
+ * To take effect, this service must be use()d as a plugin property, or else it
+ * will miss the timing to capture the loadCSS event.
+ */
 export class StyleSettings extends Service {
     onload() {
         const self = this, plugin = this.use(o.Plugin);
@@ -25,6 +26,6 @@ export class StyleSettings extends Service {
     }
 
     triggerReparse() {
-        if (app.workspace.layoutReady) app.workspace.trigger("parse-style-settings");
+        app.workspace.onLayoutReady(() => app.workspace.trigger("parse-style-settings"));
     }
 }
