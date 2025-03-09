@@ -144,6 +144,7 @@ class spWrapper implements SavePoint {
 
 /**
  * @deprecated Use job APIs from uneventful instead
+ * @class
  * @category Targeted for Removal
  */
 export let savepoint: savepoint = class extends spWrapper {

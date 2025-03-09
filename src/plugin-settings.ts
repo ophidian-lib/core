@@ -25,21 +25,22 @@ import { JSON } from "./JSON.ts";
  * settings application.
  *
  * Example:
+ * ```ts
+ * type MySettings = {...};
  *
- *     type MySettings = {...};
- *
- *     class MyPlugin extends Plugin {
- *         settings = useSettings<MySettings>(
- *             this,   // plugin or other owner
- *             {...},  // default settings
- *             (settings) => {
- *                 // code that runs when settings are loaded or changed
- *             },
- *             (settings) => {
- *                 // code to do one-time setup only
- *             }
- *         )
- *     }
+ * class MyPlugin extends Plugin {
+ *     settings = useSettings<MySettings>(
+ *         this,   // plugin or other owner
+ *         {...},  // default settings
+ *         (settings) => {
+ *             // code that runs when settings are loaded or changed
+ *         },
+ *         (settings) => {
+ *             // code to do one-time setup only
+ *         }
+ *     )
+ * }
+ * ```
  *
  * @param owner            The service or plugin
  * @param defaultSettings  (Optional) The default settings to use

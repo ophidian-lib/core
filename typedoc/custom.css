@@ -11,24 +11,31 @@ svg text {
 
 /* Hide folder icon */
 summary.tsd-accordion-summary > span > svg { display: none; }
-summary.tsd-accordion-summary:has(> span > svg)+div.tsd-accordion-details>ul.tsd-nested-navigation {
+/* Reduce margin for lists that don't have any non-leaf items, to adjust for missing folder icon */
+summary.tsd-accordion-summary:has(> span > svg) +
+div.tsd-accordion-details>ul.tsd-nested-navigation:not(
+    :has(> li > details > summary.tsd-accordion-summary)
+) {
     margin-left: 1.5rem;
 }
 
+/* Readable text width, except for code blocks */
 .col-content { max-width: 45em; }
 .col-content .tsd-panel > pre { max-width: unset; }
 .col-content .tsd-panel > * { max-width: 40em; }
 
 .site-menu, .col-sidebar { margin-right: 2rem; }
-code { padding: 0; }
 
-/* Fix wrong size code in headings */
-code { font-size: 0.875em; }
-pre code { font-size: 0.875rem; }
+/* typedoc's default padding interferes with mixed code and text */
+code:not(.tsd-tag) { padding: 0; }
+
+/* Fix wrong size code in headings due to rem being used in typedoc's defaults */
+code:not(.tsd-tag) { font-size: 0.875em; }
+
+/* Restore rem-based sizing in pre blocks */
+pre code:not(.tsd-tag) { font-size: 0.875rem; }
 
 @media (min-width: 1200px) {
-    /* Keep the menus from scrolling with the main page */
-    .page-menu, .site-menu { margin-top: -2em; padding-top: 2rem; }
     /* Keep the right scrollbar from clashing w/central content */
     .site-menu { padding-right: 1rem; }
 }
@@ -105,3 +112,7 @@ code { border-radius: 0; background: none; }
  * link is "modules.html" not "index.html".
  */
 .site-menu > .tsd-navigation > a[href$="index.html"] { display: none;}
+
+/* Retitle modules list as Table of Contents */
+.site-menu > .tsd-navigation > a[href$="modules.html"] { font-size: 0; }
+.site-menu > .tsd-navigation > a[href$="modules.html"]:before { font-size: initial; content: "Table of Contents" }

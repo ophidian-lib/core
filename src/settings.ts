@@ -12,6 +12,7 @@ import { plugin } from "./plugin.ts";
 /** @inline */
 type SettingsMigration<T> = (old: T) => (T | Promise<T|void> | PromiseLike<T|void> | void)
 
+/** @function */
 export const settings = /* @__PURE__ */ (() => {
     /**
      * Define setting defaults + migrations, and get setting helpers.

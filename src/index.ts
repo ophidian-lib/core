@@ -1,6 +1,5 @@
 /**
  * @module @ophidian/core
- * @document ../CHANGELOG.md
  */
 export * from "./add-ons.ts";
 export * from "./cleanups.ts";
@@ -10,7 +9,7 @@ export * from "./deferred.ts";
 export * from "./dom.ts";
 export * from "./eventful.ts";
 export * from "./indexing.ts";
-export * from "./JSON.ts"
+export * from "./JSON.ts";
 export * from "./layout/index.ts";
 export * from "./localStorage.ts";
 export * from "./plugin-settings.ts";

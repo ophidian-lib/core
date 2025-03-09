@@ -73,8 +73,8 @@ const settingsTab = /* @__PURE__ */ service(() => {
  * The Settings Tab class
  *
  * This is mostly an implementation detail; you will generally want to use
- * {@link settingsTab}, {@link useSettingsTab}, {@link field}, and/or
- * {@link group} rather than directly interacting with this.
+ * {@link useSettingsTab}, {@link field}, and/or {@link group} rather than
+ * directly interacting with this.
  *
  * @category Settings UI
  */

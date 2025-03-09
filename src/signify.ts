@@ -20,24 +20,28 @@ export type Writable<T> = Configurable<T>;
 
 /**
  * @deprecated Use cached from uneventful/signals
+ * @function
  * @category Targeted for Removal
  */
 export const computed = cached;
 
 /**
  * @deprecated Use value from uneventful/signals
+ * @function
  * @category Targeted for Removal
  */
 export const signal = value;
 
 /**
  * @deprecated Use runRules from uneventful/signals
+ * @function
  * @category Targeted for Removal
  */
 export const tick = runRules;
 
 /**
  * @deprecated Use peek() from uneventful/signals
+ * @function
  * @category Targeted for Removal
  */
 export const untracked = peek;
@@ -45,7 +49,7 @@ export const untracked = peek;
 type Signals<T> = Partial<{[K in keyof T]: Configurable<T[K]>}>
 type Computed<T> = Partial<{[K in keyof T]: Signal<T[K]>}>
 
-/** @category Targeted for Removal */
+/** @function @category Targeted for Removal */
 export const signals = /* @__PURE__ */ addOn(function<T extends object>(_k: T): Signals<T> { return {} });
 
 // Must be used *without* accessor and *with* useDefineForClassFields: false
@@ -80,6 +84,7 @@ export function calc<T>(_clsOrProto: object, name: string, desc: {get?: () => T}
  * which means the method can only be called from within a running `effect()`, `@rule`, or
  * other active job.
  *
+ * @function
  * @category Targeted for Removal
  */
 export const rule: GenericMethodDecorator<((...args: any[]) => OptionalCleanup)> = _rule.method;
@@ -92,6 +97,7 @@ export const rule: GenericMethodDecorator<((...args: any[]) => OptionalCleanup)>
  *
  * This is shorthand for wrapping the method body in `return untracked(() => {...})`.
  *
+ * @function
  * @category Targeted for Removal
  */
 export const action = _action;

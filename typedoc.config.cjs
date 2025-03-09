@@ -41,11 +41,16 @@ module.exports = {
         "to-use": {
             "Useful": "https://github.com/pjeby/to-use?tab=readme-ov-file#useful",
         },
+        "obsidian": {
+            "View": "https://github.com/search?q=repo%3Aobsidianmd%2Fobsidian-api+%22class+View%22+language%3ATypeScript&type=code",
+            "WorkspaceRoot": "https://github.com/search?q=repo%3Aobsidianmd%2Fobsidian-api+%22class+WorkspaceRoot%22+language%3ATypeScript&type=code",
+        }
     },
     navigation: {
         includeCategories: true,
         includeFolders: false,
     },
+    projectDocuments: ["CHANGELOG.md"],
     sort: [
         "alphabetical"
     ],

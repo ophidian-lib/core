@@ -1,7 +1,3 @@
----
-category: Developer's Guide
----
-
 # Changelog
 
 ### 0.0.25 (unreleased)

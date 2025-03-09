@@ -8,7 +8,7 @@ export type * from "to-use";
 export { app } from "./plugin.ts"
 import { isGeneratorFunction } from "uneventful/utils";
 
-/** @category Components and Services */
+/** @function @category Components and Services */
 export const use = /* @__PURE__ */ (use => {
     use.service = function service(service: o.Component) {
         use(Bootloader).addChild(service)
