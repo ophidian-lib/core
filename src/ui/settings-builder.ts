@@ -86,7 +86,7 @@ export class SettingsTabBuilder extends PluginSettingTab implements Useful, Fiel
     isOpen = value(false);
     providers: SettingsProvider[] = []
 
-    static "use.me" = settingsTab
+    static "use.me"() { return settingsTab(); }
 
     with(...features: Feature<this>[]) { return applyFeatures(this, ...features); }
 
