@@ -24,7 +24,7 @@ export type JSONPrimitive = string | number | boolean | Date | null;
  *
  * @category Types and Interfaces
  */
-export type JSON<T> = unknown extends T ? never : {
+export type JSON<T> = {
     [P in keyof T]:
         T[P] extends JSONValue ? T[P] :
         T[P] extends NotJSON ? never :

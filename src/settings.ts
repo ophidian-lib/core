@@ -12,7 +12,7 @@ import { plugin } from "./plugin.ts";
 /** @inline */
 type SettingsMigration<T> = (old: T) => (T | Promise<T|void> | PromiseLike<T|void> | void)
 
-/** @function */
+/** @function @experimental */
 export const settings = /* @__PURE__ */ (() => {
     /**
      * Define setting defaults + migrations, and get setting helpers.
@@ -143,10 +143,9 @@ export const settings = /* @__PURE__ */ (() => {
 
         async function loadData() {
             let data = (await plugin.loadData()) || {}
+            onDisk.set(JSON.stringify(data))
             for(const m of migrations) data = (await m(data)) || data
-            const j = JSON.stringify(data)
-            onDisk.set(j)
-            rawSettings.set(j)
+            rawSettings.set(JSON.stringify(data))
             settingsLoaded.set(true)
         }
     }

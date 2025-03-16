@@ -55,7 +55,7 @@ const settingsTab = /* @__PURE__ */ service(() => {
     if (!plugin) throw new Error("Plugin not created/registered yet")
     const tab = new SettingsTabBuilder(app, plugin)
     tab.containerEl = tabEl
-    settings.rule(() => {
+    rule.if(settings, () => {
         tab.plugin.addSettingTab(tab)
         rule(() => {
             if (!tab.isOpen()) return;
