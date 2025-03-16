@@ -47,7 +47,7 @@ pre code:not(.tsd-tag) { font-size: 0.875rem; }
 
 /* Add `()` after functions and `.*` after namespaces */
 svg:has(use[href$="#icon-64"])+a::after,
-a:has(use[href$="#icon-64"]) span::after {
+a:has(use[href$="#icon-64"]) span:last-child::after {
     content: "()";
 }
 svg:has(use[href$="#icon-4"])+a::after,

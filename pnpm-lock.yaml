@@ -34,7 +34,7 @@ devDependencies:
   sass: 1.76.0
   tsup: 8.0.2_typescript@5.2.2
   tsx: 4.10.0
-  typedoc: 0.28.0-beta.1_typescript@5.2.2
+  typedoc: 0.28.0-beta.2_typescript@5.2.2
   typescript: 5.2.2
   uneventful: 0.0.10
 
@@ -706,16 +706,11 @@ packages:
   /@types/codemirror/5.60.8:
     resolution: {integrity: sha512-VjFgDF/eB+Aklcy15TtOTLQeMjTo07k7KAjql8OK5Dirr7a6sJY4T1uVBDuTVG9VEmn1uUsohOpYnVfgC6/jyw==}
     dependencies:
-      '@types/tern': 0.23.4
-    dev: false
-
-  /@types/estree/1.0.0:
-    resolution: {integrity: sha512-WulqXMDUTYAXCjZnk6JtIHPigp55cVtDgDrO2gHRwhyJto21+1zbVCtOYB2L1F9w4qCQ0rOGWBnBe0FNTiEJIQ==}
+      '@types/tern': 0.23.9
     dev: false
 
   /@types/estree/1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
-    dev: true
 
   /@types/hast/3.0.4:
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
@@ -727,10 +722,10 @@ packages:
     resolution: {integrity: sha512-OTcgaiwfGFBKacvfwuHzzn1KLxH/er8mluiy8/uM3sGXHaRe73RrSIj01jow9t4kJEW633Ov+cOexXeiApTyAw==}
     dev: true
 
-  /@types/tern/0.23.4:
-    resolution: {integrity: sha512-JAUw1iXGO1qaWwEOzxTKJZ/5JxVeON9kvGZ/osgZaJImBnyjyn0cjovPsf6FNLmyGY8Vw9DoXZCMlfMkMwHRWg==}
+  /@types/tern/0.23.9:
+    resolution: {integrity: sha512-ypzHFE/wBzh+BlH6rrBgS5I/Z7RD21pGhZ2rltb/+ZrVM1awdZwjx7hE5XfuYgHWk9uvV5HLZN3SloevCAp3Bw==}
     dependencies:
-      '@types/estree': 1.0.0
+      '@types/estree': 1.0.5
     dev: false
 
   /@types/unist/3.0.3:
@@ -1595,8 +1590,8 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /typedoc/0.28.0-beta.1_typescript@5.2.2:
-    resolution: {integrity: sha512-XLWwvgrj0cWsfPMwAVJiPgfl7cJFgCWT60wLjtCNBiO0umB520Nioi7phIGt+NtTuHSNR8gMmwmYsSe8XZjL4g==}
+  /typedoc/0.28.0-beta.2_typescript@5.2.2:
+    resolution: {integrity: sha512-+7YrRafvYClYuQqhWUvUkUAB/eD7Jh1gls/PVeCOInz3MeOYnl8H76EnnMp7kiXeNV35GwP3foVbNCaxyO8OFg==}
     engines: {node: '>= 18', pnpm: '>= 10'}
     hasBin: true
     peerDependencies:
@@ -1616,12 +1611,12 @@ packages:
     hasBin: true
     dev: true
 
-  /uneventful/0.0.10:
-    resolution: {integrity: sha512-uSgjcmhgH8tqwT8fe8iVIitUbfZfmha7Xxi2cu/ZpJsvl+iQtYfFPjF/tA/s+Co8pbIo08jZh70Kww9PraCSAg==}
-    dev: true
-
   /uc.micro/2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
+    dev: true
+
+  /uneventful/0.0.10:
+    resolution: {integrity: sha512-uSgjcmhgH8tqwT8fe8iVIitUbfZfmha7Xxi2cu/ZpJsvl+iQtYfFPjF/tA/s+Co8pbIo08jZh70Kww9PraCSAg==}
     dev: true
 
   /w3c-keyname/2.2.8:
