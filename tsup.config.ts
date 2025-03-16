@@ -10,7 +10,8 @@ export default defineConfig({
     treeshake: true,
     dts: {
         entry: "src/index.ts",
-        banner: `/// <reference path="../src/augments.d.ts" />`,
+        // https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/#simplified-reference-directive-declaration-emit
+        banner: `/// <reference path="../src/augments.d.ts" preserve="true" />`,
     },
     external: ["uneventful"],
     esbuildPlugins: [
