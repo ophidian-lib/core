@@ -3,6 +3,38 @@ import { Service, app } from "../services.ts";
 import { obsidian as o } from "../obsidian.ts";
 
 /**
+ * Fetch style sheet settings for a specified style sheet
+ *
+ * @param sheetID The `id` from the style sheet comment identifying a settings
+ * group
+ *
+ * @returns A mapping of field IDs to values; empty if no style settings are
+ * present for the identified style sheet.  (Note that in some cases, field IDs
+ * may be something like `some-thing@@other-thing`.)
+ *
+ * @category Settings Management
+ */
+export async function styleSettingsFor(sheetID: string) {
+    const res: Record<string, any> = {}
+    try {
+        Object.entries(
+            JSON.parse(
+                await app.vault.adapter.read(
+                    `${app.plugins.getPluginFolder()}/obsidian-style-settings/data.json`
+                )
+            )
+        ).forEach(([k, v]) => {
+            const parts = k.split("@@"), sid = parts.shift(), key = parts.join("@@");
+            if (sid === sheetID) res[key] = v
+        })
+        return res;
+    } catch (e) {
+        if (e.code === "ENOENT") return {};
+        throw e;
+    }
+}
+
+/**
  * use() this to make your plugin support dynamic Style Settings
  *
  * Currently, Obsidian doesn't announce CSS changes when plugins load, so Style

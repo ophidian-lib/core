@@ -35,6 +35,7 @@ declare module "obsidian" {
     }
     interface App {
         appId: string;
+        plugins: _Plugins
     }
     interface Workspace {
         setLayout(layout: any): Promise<void>;
@@ -47,6 +48,9 @@ declare module "obsidian" {
     }
     interface WorkspaceParent {
         children: WorkspaceItem[]
+    }
+    interface _Plugins {
+        getPluginFolder(): string
     }
 }
 

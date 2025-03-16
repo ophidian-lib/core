@@ -3,6 +3,7 @@
 ### 0.0.25 (unreleased)
 
 - New settings API: {@link settings}.  (The older APIs are still available, but share their implementation with the new APIs.)  Among other features, automatic transparent support for `onExternalSettingsChange()` has been added, meaning that as long as you're using setting subscriptions your app will automatically apply any new settings when using Obsidian Sync or other tools that update your plugin's `data.json`.
+- Added {@link styleSettingsFor}() API to read settings from the Obsidian Style Settings plugin, to ease migration of settings from Style Settings to internal settings.
 - Add {@link register `@register`} decorator that lets you run your Obsidian components' `.onload()` methods in an Uneventful job, so you don't have to `this.register(root.start(() => {}).end)` in every component.
 - Fixed: the {@link StyleSettings} service will now correctly trigger an update at the right time when Obsidian is starting.
 - Fixed: {@link LayoutSetting.onSet}() was passing the wrong arguments to its callback when setting was tied to a specific layout item (via `.of()` or at construction time). If you were relying on this behavior, you may need to add an extra (ignored) initial argument to your callback.
