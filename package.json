@@ -25,7 +25,6 @@
     "defaults": "^2.0.1",
     "i18next": "^20.3.2",
     "monkey-around": "^3",
-    "obsidian": "1.3.5",
     "to-use": "^0.3.3"
   },
   "devDependencies": {
@@ -33,6 +32,7 @@
     "@codemirror/view": "^6.26.3",
     "@types/node": "16",
     "esbuild-plugin-inline-import": "^1.0.4",
+    "obsidian": "1.3.5",
     "onchange": "^7.1.0",
     "sass": "^1.76.0",
     "tsup": "^8.0.2",
@@ -42,6 +42,7 @@
     "uneventful": "^0.0.10"
   },
   "peerDependencies": {
+    "obsidian": "1.3.5",
     "uneventful": "^0.0.10"
   },
   "scripts": {
